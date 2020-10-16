@@ -55,7 +55,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 //setup router to deploy
-app.use("/", indexRouter);
+// app.use("/", indexRouter);
 app.use("/api/accounts", accountRouters);
 
 // catch 404 and forward to error handler
@@ -92,3 +92,5 @@ app.listen(process.env.PORT || 5000, () => {
 });
 
 module.exports = app;
+
+// "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
