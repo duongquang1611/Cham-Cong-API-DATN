@@ -12,7 +12,6 @@ var flash = require("connect-flash");
 var session = require("express-session");
 
 var indexRouter = require("./routes/api/index");
-// var accountRouter = require("./routes/account");
 var accountRouters = require("./routes/api/account");
 const initial = require("./models/initial");
 
@@ -57,7 +56,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 //setup router
 app.use("/", indexRouter);
-// app.use("/account", accountRouter);
 app.use("/api/accounts", accountRouters);
 
 // catch 404 and forward to error handler
