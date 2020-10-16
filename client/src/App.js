@@ -1,14 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-import DropDownButtonView from "./components/DropDownButtonView";
+import Login from "./components/Account";
+// import DropDownButtonView from "./components/DropDownButtonView";
 
 function App() {
   return (
     <div className="App">
-      <h1>Duong Quang</h1>
-      <DropDownButtonView />
+      <Login />
     </div>
   );
 }
