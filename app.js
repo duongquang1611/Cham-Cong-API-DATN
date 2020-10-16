@@ -52,7 +52,7 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 
 //setup router to deploy
 // app.use("/", indexRouter);
@@ -76,19 +76,19 @@ app.use(function (err, req, res, next) {
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder
-  // app.use(express.static("client/build"));
+  app.use(express.static(path.join(__dirname, "client", "build")));
 
-  // app.get("*", (req, res) => {
-  //   // res.sendFile(path.resolve(__dirname, "../client/build/index.html"));
-  //   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
-  // });
-  app.use("*", express.static(path.join(__dirname, "client", "build")));
+  // ...
+  // Right before your app.listen(), add this:
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+  });
 }
 
-// app.listen((port = 2938), function () {
+// app.listen((port = 5000), function () {
 //   console.log("Server listening connect port " + port);
 // });
-app.listen(process.env.PORT || 2938, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log("Server running in post " + process.env.PORT);
 });
 
