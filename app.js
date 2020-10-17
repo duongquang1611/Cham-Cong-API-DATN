@@ -10,7 +10,7 @@ var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
 var session = require("express-session");
-var { MONGO_URI, JWT_SECRET, NODE_ENV } = require("./config");
+var { MONGO_URI, JWT_SECRET, PORT } = require("./config");
 
 var indexRouter = require("./routes/api/index");
 var userRouters = require("./routes/api/user");
@@ -59,7 +59,7 @@ app.use(cookieParser());
 // app.use("/", indexRouter);
 app.use("/api/users", userRouters);
 
-if (NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production") {
   // Set static folder
   app.use(express.static(path.join(__dirname, "client", "build")));
 
@@ -89,8 +89,8 @@ app.use(function (err, req, res, next) {
 // app.listen((port = 5000), function () {
 //   console.log("Server listening connect port " + port);
 // });
-app.listen(process.env.PORT || 5000, () => {
-  console.log("Server running in post " + process.env.PORT || 5000);
+app.listen(PORT || 5000, () => {
+  console.log("Server running in post " + PORT || 5000);
 });
 
 module.exports = app;
