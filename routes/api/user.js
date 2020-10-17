@@ -5,6 +5,9 @@ const errorCode = require("../../config/errorCode");
 const resCustom = require("../../config/resCustom");
 var router = express.Router();
 var User = require("../../models/user.model");
+var jwt = require("jsonwebtoken");
+var { JWT_SECRET } = require("../../config");
+console.log("JWT_SECRET", JWT_SECRET);
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
 // all user
@@ -26,7 +29,7 @@ router.delete("/:id", (req, res) => {
     });
 });
 
-router.post("/signup", (req, res) => {
+router.post("/signup", async (req, res) => {
   const { username, password, name, phoneNumber, roleId } = req.body;
   listKey.map((key) => {
     if (!req.body[key]) {
@@ -34,34 +37,46 @@ router.post("/signup", (req, res) => {
       return resCustom(400, res, { msg: `${key} không được để trống.` });
     }
   });
+  try {
+    const user = await User.findOne({ username });
+    if (user) throw Error(`Tài khoản ${user.username} đã tồn tại`);
 
-  User.findOne({ username }).then((user) => {
-    if (user) {
-      return resCustom(400, res, {
-        msg: `Tài khoản ${user.username} đã tồn tại`,
-      });
-    }
-
-    const newUser = new User({
+    let newUser = new User({
       username,
-      password,
       name,
       phoneNumber,
       roleId,
-      updatedAt: Date.now(),
     });
-    newUser.password = newUser.encryptPassword(password);
-    newUser.save(function (err, user) {
-      if (err) {
-        return res.status(400).json({
-          msg: `${Object.entries(err.keyValue)
-            .toString()
-            .replace(",", ":")} không hợp lệ.`,
-        });
-      }
-      return res.status(201).json(user);
-    });
-  });
+    const passwordHash = await newUser.encryptPassword(password);
+    newUser.password = passwordHash;
+
+    const savedUser = await newUser.save();
+
+    if (!savedUser) throw Error("Lỗi khi lưu thông tin user");
+
+    const token = jwt.sign(
+      {
+        id: savedUser._id,
+        roleId: savedUser.roleId,
+        username: savedUser.username,
+      },
+      JWT_SECRET,
+      { expiresIn: 36000000 }
+    );
+    return res.status(201).json({ token, user: savedUser });
+    // newUser.save(function (err, user) {
+    //   if (err) {
+    //     return res.status(400).json({
+    //       msg: `${Object.entries(err.keyValue)
+    //         .toString()
+    //         .replace(",", ":")} không hợp lệ.`,
+    //     });
+    //   }
+    //   return res.status(201).json(user);
+    // });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // router.post(

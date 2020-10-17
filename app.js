@@ -10,7 +10,7 @@ var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
 var session = require("express-session");
-var { PORT, MONGO_URI, JWT_SECRET, NODE_ENV } = require("./config");
+var { MONGO_URI, JWT_SECRET, NODE_ENV } = require("./config");
 
 var indexRouter = require("./routes/api/index");
 var userRouters = require("./routes/api/user");
@@ -89,8 +89,8 @@ app.use(function (err, req, res, next) {
 // app.listen((port = 5000), function () {
 //   console.log("Server listening connect port " + port);
 // });
-app.listen(PORT || 5000, () => {
-  console.log("Server running in post " + PORT);
+app.listen(process.env.PORT || 5000, () => {
+  console.log("Server running in post " + process.env.PORT || 5000);
 });
 
 module.exports = app;
