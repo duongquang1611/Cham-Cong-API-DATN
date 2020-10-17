@@ -1,4 +1,4 @@
-var Role = require("../models/role.model");
+import Role from "../models/role.model.js";
 const Role_DATA = [
   {
     name: "Nhân viên",
@@ -48,4 +48,4 @@ function initial() {
     }
   });
 }
-module.exports = initial;
+export default initial;

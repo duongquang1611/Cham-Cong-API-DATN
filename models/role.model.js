@@ -1,4 +1,4 @@
-var mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 var Schema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,4 +6,4 @@ var Schema = new mongoose.Schema({
   roleId: { type: Number, required: true },
 });
 
-module.exports = mongoose.model("Role", Schema);
+export default mongoose.model("Role", Schema);

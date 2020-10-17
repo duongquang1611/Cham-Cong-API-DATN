@@ -1,26 +1,26 @@
-require("dotenv").config();
-require("./config/passport"); //vượt qua passport để config trang đăng nhâp/đăng ký
+import dotenv from "dotenv";
+import createError from "http-errors";
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import logger from "morgan";
+import mongoose from "mongoose";
+import passport from "passport";
+import flash from "connect-flash";
+import session from "express-session";
+import config from "./config/index.js";
 
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-var passport = require("passport");
-var flash = require("connect-flash");
-var session = require("express-session");
-var { MONGO_URI, JWT_SECRET, PORT } = require("./config");
+// import indexRouter from "./routes/api/index"
+import userRouters from "./routes/api/user.js";
+import authRouters from "./routes/api/auth.js";
+import initial from "./models/initial.js";
 
-var indexRouter = require("./routes/api/index");
-var userRouters = require("./routes/api/user");
-const initial = require("./models/initial");
-
+dotenv.config();
 var app = express();
 
 // path database
 mongoose
-  .connect(MONGO_URI, {
+  .connect(config.MONGO_URI, {
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -46,27 +46,28 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // view engine setup
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(path.dirname(""), "views"));
 app.set("view engine", "pug");
 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(path.dirname(''), "public")));
 
 //setup router to deploy
 // app.use("/", indexRouter);
 app.use("/api/users", userRouters);
+app.use("/api/auth", authRouters);
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder
-  app.use(express.static(path.join(__dirname, "client", "build")));
+  app.use(express.static(path.join(path.dirname(""), "client", "build")));
 
   // ...
   // Right before your app.listen(), add this:
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+    res.sendFile(path.join(path.dirname(""), "client", "build", "index.html"));
   });
 }
 
@@ -89,10 +90,10 @@ app.use(function (err, req, res, next) {
 // app.listen((port = 5000), function () {
 //   console.log("Server listening connect port " + port);
 // });
-app.listen(PORT || 5000, () => {
-  console.log("Server running in post " + PORT || 5000);
+app.listen(config.PORT || 5000, () => {
+  console.log("Server running in post " + config.PORT || 5000);
 });
 
-module.exports = app;
+export default app;
 
 // "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"

@@ -1,82 +1,35 @@
-var express = require("express");
-const { check, validationResult } = require("express-validator");
-const passport = require("passport");
-const errorCode = require("../../config/errorCode");
-const resCustom = require("../../config/resCustom");
+import express from "express";
+import auth from "../../middleware/auth.js";
+import userModel from "../../models/user.model.js";
+
 var router = express.Router();
-var User = require("../../models/user.model");
-var jwt = require("jsonwebtoken");
-var { JWT_SECRET } = require("../../config");
-console.log("JWT_SECRET", JWT_SECRET);
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
 // all user
-router.get("/", (req, res) => {
-  User.find()
+router.get("/", auth, (req, res) => {
+  userModel
+    .find()
     .sort({ updatedAt: -1 }) // new to old
+    .select("-password")
     .then((items) => res.json(items));
-  //   res.json({ a: 1 });
 });
 
 // delete user
-router.delete("/:id", (req, res) => {
-  User.findById(req.params.id)
+router.delete("/:id", auth, (req, res) => {
+  userModel
+    .findById(req.params.id)
     .then((item) => {
-      return item.remove().then(() => res.json({ success: true }));
+      return item
+        .remove()
+        .then(() =>
+          res.json({ msg: `Xóa userId: ${req.params.id} thành công` })
+        );
     })
     .catch((err) => {
-      return res.status(404).json({ success: false });
+      return res
+        .status(404)
+        .json({ msg: `userId: ${req.params.id} không tồn tại.` });
     });
-});
-
-router.post("/signup", async (req, res) => {
-  const { username, password, name, phoneNumber, roleId } = req.body;
-  listKey.map((key) => {
-    if (!req.body[key]) {
-      console.log("key", key);
-      return resCustom(400, res, { msg: `${key} không được để trống.` });
-    }
-  });
-  try {
-    const user = await User.findOne({ username });
-    if (user) throw Error(`Tài khoản ${user.username} đã tồn tại`);
-
-    let newUser = new User({
-      username,
-      name,
-      phoneNumber,
-      roleId,
-    });
-    const passwordHash = await newUser.encryptPassword(password);
-    newUser.password = passwordHash;
-
-    const savedUser = await newUser.save();
-
-    if (!savedUser) throw Error("Lỗi khi lưu thông tin user");
-
-    const token = jwt.sign(
-      {
-        id: savedUser._id,
-        roleId: savedUser.roleId,
-        username: savedUser.username,
-      },
-      JWT_SECRET,
-      { expiresIn: 36000000 }
-    );
-    return res.status(201).json({ token, user: savedUser });
-    // newUser.save(function (err, user) {
-    //   if (err) {
-    //     return res.status(400).json({
-    //       msg: `${Object.entries(err.keyValue)
-    //         .toString()
-    //         .replace(",", ":")} không hợp lệ.`,
-    //     });
-    //   }
-    //   return res.status(201).json(user);
-    // });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
 });
 
 // router.post(
@@ -110,4 +63,4 @@ router.post("/signup", async (req, res) => {
 //     failureFlash: true,
 //   })
 // );
-module.exports = router;
+export default router;
