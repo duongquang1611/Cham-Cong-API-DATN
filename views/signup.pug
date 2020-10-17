@@ -2,13 +2,13 @@ extends layout
 
 block content
   div.signin
-    h1(style='color: #333; font-size:2em')  Don't Have An Account
+    h1(style='color: #333; font-size:2em')  Don't Have An User
     div.center
         h3 SIGN UP
         if hasErrors
          each mess in messages
            span.err= mess
-        form(action="/account/signup" method="POST")
+        form(action="/user/signup" method="POST")
             div.field
                 div.label(for="username") username
                 input(style='width:80%')( type="username" name="username" placeholder='username')

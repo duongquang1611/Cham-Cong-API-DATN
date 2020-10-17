@@ -7,7 +7,7 @@ block content
         if hasErrors
           each mess in messages
             span.err= mess
-        form(action="/account/signin" method="POST")
+        form(action="/user/signin" method="POST")
             div.field
                 div.label(for="username") username
                 input(type="username" name="username" placeholder='username')
@@ -15,5 +15,5 @@ block content
                 div.label(for="password") Password
                 input(type="password" name="password" placeholder='Password')
             button.btn(type='submit') Sign In
-            p Don't Have An Account? &nbsp
-              a(href='/account/signup') Register an account
+            p Don't Have An User? &nbsp
+              a(href='/user/signup') Register an user

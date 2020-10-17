@@ -12,7 +12,7 @@ var flash = require("connect-flash");
 var session = require("express-session");
 
 var indexRouter = require("./routes/api/index");
-var accountRouters = require("./routes/api/account");
+var userRouters = require("./routes/api/user");
 const initial = require("./models/initial");
 
 var app = express();
@@ -56,7 +56,7 @@ app.use(cookieParser());
 
 //setup router to deploy
 // app.use("/", indexRouter);
-app.use("/api/accounts", accountRouters);
+app.use("/api/users", userRouters);
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder
