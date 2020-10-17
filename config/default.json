@@ -1,0 +1,6 @@
+{
+    "MONGO_URI": "mongodb+srv://duongquang:@Gemini66@cluster0.gxys1.azure.mongodb.net/cham-cong?retryWrites=true&w=majority",
+    "JWT_SECRET": "duongquang",
+    "PORT":5000
+  }
+  
