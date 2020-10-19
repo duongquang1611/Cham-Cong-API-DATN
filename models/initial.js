@@ -3,22 +3,27 @@ const Role_DATA = [
   {
     name: "Nhân viên",
     code: "staff",
-    roleId: 0,
-  },
-  {
-    name: "Nhân sự",
-    code: "hr",
-    roleId: 1,
+    level: "",
   },
   {
     name: "Quản lý",
     code: "manager",
-    roleId: 2,
+    level: "",
   },
   {
-    name: "Admin",
-    code: "admin",
-    roleId: 3,
+    name: "Quản lý nhân sự",
+    code: "admin_company",
+    level: "",
+  },
+  {
+    name: "Giám đốc",
+    code: "director",
+    level: "",
+  },
+  {
+    name: "Quản  trị hệ thống",
+    code: "admin_system",
+    level: "",
   },
 ];
 function initial() {

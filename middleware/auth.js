@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import handleError from "../commons/handleError.js";
 import config from "../config/index.js";
 
 const { JWT_SECRET } = config;
@@ -21,8 +22,7 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (e) {
-    throw Error("Token không hợp lệ.");
-    // res.status(400).json({ msg: "Token không hợp lệ." });
+    return handleError(res, "Token không hợp lệ.");
   }
 };
 export default auth;

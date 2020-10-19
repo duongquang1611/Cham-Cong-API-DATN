@@ -1,5 +1,6 @@
 {
     "MONGO_URI": "mongodb+srv://duongquang:@Gemini66@cluster0.gxys1.azure.mongodb.net/cham-cong?retryWrites=true&w=majority",
-    "JWT_SECRET": "duongquang"
+    "JWT_SECRET": "duongquang",
+    "DATABASE_URL":"postgres://cseloklplqzkpp:a49e44f0fb4df68f775eecc7507ebe72d1d60d521baf4cb1970d8bebb05aa73f@ec2-50-17-197-184.compute-1.amazonaws.com:5432/d441ok1jpao8hu"
   }
   

@@ -1,4 +1,5 @@
 import express from "express";
+import handleError from "../../commons/handleError.js";
 import auth from "../../middleware/auth.js";
 import userModel from "../../models/user.model.js";
 
@@ -8,10 +9,34 @@ const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 // all user
 router.get("/", auth, (req, res) => {
   userModel
-    .find()
+    .find({}, "-__v")
+    .populate({
+      path: "roleId",
+      select: "-__v",
+    })
     .sort({ updatedAt: -1 }) // new to old
     .select("-password")
     .then((items) => res.json(items));
+});
+
+router.get("/:id", auth, async (req, res) => {
+  console.log("req.params.id", req.params.id);
+  try {
+    let user = await userModel
+      .findOne({ _id: req.params.id }, "-password -__v")
+      .populate({
+        path: "roleId",
+        select: "-__v",
+      })
+      .select("-password");
+
+    if (!user) {
+      return handleError(res, "User không tồn tại.");
+    }
+    return res.json(user);
+  } catch (error) {
+    return handleError(res, error);
+  }
 });
 
 // delete user

@@ -2,20 +2,55 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import userModel from "../../models/user.model.js";
 import config from "../../config/index.js";
+import handleError from "../../commons/handleError.js";
 var router = express.Router();
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+
+router.post("/signin", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    let user = await await userModel.findOne({ username }, "-__v");
+
+    if (!user) {
+      return handleError(res, "Tài khoản không tồn tại.");
+    }
+
+    if (!user.validPassword(password)) {
+      return handleError(res, "Mật khẩu không chính xác.");
+    }
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        roleId: user.roleId,
+        username: user.username,
+      },
+      config.JWT_SECRET,
+      { expiresIn: 36000000 }
+    );
+
+    let userWithoutPassword = { ...user._doc };
+    delete userWithoutPassword["password"];
+    return res.json({ token, user: userWithoutPassword });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
 
 router.post("/signup", async (req, res) => {
   const { username, password, name, phoneNumber, roleId } = req.body;
   listKey.map((key) => {
     if (!req.body[key]) {
-      res.status(400).json({ msg: `${key} không được để trống.` });
+      return handleError(res, `${key} không được để trống.`);
     }
   });
   try {
-    const user = await userModel.findOne({ username });
-    if (user)
-      res.status(400).json({ msg: `Tài khoản ${user.username} đã tồn tại` });
+    const user = await userModel.findOne({ username }, "-__v");
+
+    if (user) {
+      return handleError(res, `Tài khoản ${user.username} đã tồn tại`);
+    }
 
     let newUser = new userModel({
       username,
@@ -28,20 +63,11 @@ router.post("/signup", async (req, res) => {
 
     const savedUser = await newUser.save();
 
-    if (!savedUser) res.status(400).json({ msg: "Lỗi khi lưu thông tin user" });
+    if (!savedUser) return handleError("Lỗi khi lưu thông tin user");
 
-    const token = jwt.sign(
-      {
-        id: savedUser._id,
-        roleId: savedUser.roleId,
-        username: savedUser.username,
-      },
-      config.JWT_SECRET,
-      { expiresIn: 36000000 }
-    );
     let userWithoutPassword = { ...savedUser._doc };
     delete userWithoutPassword["password"];
-    return res.status(201).json({ token, user: userWithoutPassword });
+    return res.status(201).json(userWithoutPassword);
 
     // newUser.save(function (err, user) {
     //   if (err) {
@@ -54,7 +80,7 @@ router.post("/signup", async (req, res) => {
     //   return res.status(201).json(user);
     // });
   } catch (error) {
-    res.status(400).json({ msg: error.message });
+    return handleError(res, error.message);
   }
 });
 

@@ -11,9 +11,12 @@ import session from "express-session";
 import config from "./config/index.js";
 
 // import indexRouter from "./routes/api/index"
+import initial from "./models/initial.js";
+
 import userRouters from "./routes/api/user.js";
 import authRouters from "./routes/api/auth.js";
-import initial from "./models/initial.js";
+import roleRouters from "./routes/api/role.js";
+import companyRouters from "./routes/api/company.js";
 
 dotenv.config();
 var app = express();
@@ -59,6 +62,8 @@ app.use(cookieParser());
 // app.use("/", indexRouter);
 app.use("/api/users", userRouters);
 app.use("/api/auth", authRouters);
+app.use("/api/roles", roleRouters);
+app.use("/api/companies", companyRouters);
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder
