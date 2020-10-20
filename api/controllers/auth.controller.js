@@ -1,16 +1,14 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import userModel from "../../models/user.model.js";
-import config from "../../config/index.js";
 import handleError from "../../commons/handleError.js";
-var router = express.Router();
+import userModel from "../../models/user.model.js";
+import jwt from "jsonwebtoken";
+import config from "../../config/index.js";
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
-router.post("/signin", async (req, res) => {
+const postSignIn = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    let user = await await userModel.findOne({ username }, "-__v");
+    let user = await userModel.findOne({ username }, "-__v");
 
     if (!user) {
       return handleError(res, "Tài khoản không tồn tại.");
@@ -36,9 +34,9 @@ router.post("/signin", async (req, res) => {
   } catch (error) {
     handleError(res, error);
   }
-});
+};
 
-router.post("/signup", async (req, res) => {
+const postSignUp = async (req, res, next) => {
   const { username, password, name, phoneNumber, roleId } = req.body;
   listKey.map((key) => {
     if (!req.body[key]) {
@@ -49,7 +47,8 @@ router.post("/signup", async (req, res) => {
     const user = await userModel.findOne({ username }, "-__v");
 
     if (user) {
-      return handleError(res, `Tài khoản ${user.username} đã tồn tại`);
+      throw new Error(`Tài khoản ${user.username} đã tồn tại`);
+      // return handleError(res, `Tài khoản ${user.username} đã tồn tại`);
     }
 
     let newUser = new userModel({
@@ -82,6 +81,9 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     return handleError(res, error.message);
   }
-});
+};
 
-export default router;
+export default {
+  postSignIn,
+  postSignUp,
+};

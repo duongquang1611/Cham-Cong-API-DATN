@@ -13,10 +13,10 @@ import config from "./config/index.js";
 // import indexRouter from "./routes/api/index"
 import initial from "./models/initial.js";
 
-import userRouters from "./routes/api/user.js";
-import authRouters from "./routes/api/auth.js";
-import roleRouters from "./routes/api/role.js";
-import companyRouters from "./routes/api/company.js";
+import apiUserRouters from "./api/routes/user.route.js";
+import apiAuthRouters from "./api/routes/auth.route.js";
+import apiRoleRouters from "./api/routes/role.route.js";
+import apiCompanyRouters from "./api/routes/company.route.js";
 
 dotenv.config();
 var app = express();
@@ -60,10 +60,10 @@ app.use(cookieParser());
 
 //setup router to deploy
 // app.use("/", indexRouter);
-app.use("/api/users", userRouters);
-app.use("/api/auth", authRouters);
-app.use("/api/roles", roleRouters);
-app.use("/api/companies", companyRouters);
+app.use("/api/users", apiUserRouters);
+app.use("/api/auth", apiAuthRouters);
+app.use("/api/roles", apiRoleRouters);
+app.use("/api/companies", apiCompanyRouters);
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder

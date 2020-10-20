@@ -1,12 +1,8 @@
-import express from "express";
-import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
-import auth from "../../middleware/auth.js";
 import companyModel from "../../models/company.model.js";
-var router = express.Router();
 
-router.get("/", async (req, res) => {
+const index = async (req, res, next) => {
   try {
     let companies = await companyModel
       .find({}, "-__v")
@@ -17,9 +13,9 @@ router.get("/", async (req, res) => {
   } catch (error) {
     return handleError(res, error);
   }
-});
+};
 
-router.post("/", auth, async (req, res) => {
+const postIndex = async (req, res, next) => {
   const { name } = req.body;
   let tokenData = commons.getUserIdInToken(req);
   let requiredKey = ["name"];
@@ -40,6 +36,9 @@ router.post("/", auth, async (req, res) => {
   } catch (error) {
     return handleError(res, error);
   }
-});
+};
 
-export default router;
+export default {
+  index,
+  postIndex,
+};
