@@ -2,6 +2,7 @@ import handleError from "../../commons/handleError.js";
 import userModel from "../../models/user.model.js";
 import jwt from "jsonwebtoken";
 import config from "../../config/index.js";
+import mongoose from "mongoose";
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
 const index = async (req, res, next) => {
@@ -17,7 +18,6 @@ const index = async (req, res, next) => {
 };
 
 const detailUser = async (req, res, next) => {
-  console.log("req.params.id", req.params.id);
   try {
     let user = await userModel
       .findOne({ _id: req.params.id }, "-password -__v")
@@ -37,24 +37,44 @@ const detailUser = async (req, res, next) => {
 };
 
 const deleteUser = async (req, res, next) => {
-  userModel
-    .findById(req.params.id)
-    .then((item) => {
-      return item
-        .remove()
-        .then(() =>
-          res.json({ msg: `Xóa userId: ${req.params.id} thành công` })
-        );
-    })
-    .catch((err) => {
-      return res
-        .status(404)
-        .json({ msg: `userId: ${req.params.id} không tồn tại.` });
-    });
+  let _id = req.params.id;
+  try {
+    let user = await userModel.findOneAndRemove({ _id });
+    if (!user) {
+      return handleError(res, `Id: ${_id} không tồn tại.`);
+    }
+    return res.json({ msg: `Xóa Id: ${req.params.id} thành công.` });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  let _id = req.params.id;
+  let updateData = req.body;
+  try {
+    // cach 1
+    let newUser = await userModel
+      .findByIdAndUpdate(_id, updateData, { new: true })
+      .select("-__v -password")
+
+      .exec();
+
+    // cach 2
+    // let newUser = await userModel
+    //   .findOneAndUpdate({ _id }, updateData, { new: true })
+    //   .select("-__v -password")
+    //   .exec();
+
+    return res.json(newUser);
+  } catch (error) {
+    return handleError(res, error);
+  }
 };
 
 export default {
   index,
   detailUser,
   deleteUser,
+  updateUser,
 };

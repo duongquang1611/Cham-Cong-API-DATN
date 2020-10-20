@@ -27,6 +27,7 @@ mongoose
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useFindAndModify: false, // disable warning findByIdAndUpdate
   })
   .then(() => {
     console.log("Successfully connect to MongoDB.");

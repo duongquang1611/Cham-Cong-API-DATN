@@ -1,6 +1,8 @@
 import handleError from "./handleError.js";
 import jwt from "jsonwebtoken";
 import config from "../config/index.js";
+import mongoose from "mongoose";
+
 const getUserIdInToken = (req) => {
   const authorization = req.header("Authorization");
   const tokenArray = authorization.split(" ");

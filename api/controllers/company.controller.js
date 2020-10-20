@@ -1,7 +1,7 @@
+import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
 import companyModel from "../../models/company.model.js";
-
 const index = async (req, res, next) => {
   try {
     let companies = await companyModel
@@ -38,7 +38,63 @@ const postIndex = async (req, res, next) => {
   }
 };
 
+const updateCompany = async (req, res, next) => {
+  let _id = req.params.id;
+  let updateData = req.body;
+  try {
+    // cach 1
+    let newCompany = await companyModel
+      .findByIdAndUpdate(_id, updateData, { new: true })
+      .populate({ path: "createdBy", select: "-__v -password" })
+      .populate({ path: "updatedBy", select: "-__v -password" })
+      .select("-__v ")
+      .exec();
+
+    // cach 2
+    // let newCompany = await companyModel
+    //   .findOneAndUpdate({ _id }, updateData, { new: true })
+    //   .select("-__v ")
+    //   .exec();
+
+    return res.json(newCompany);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const detailCompany = async (req, res, next) => {
+  try {
+    let company = await companyModel
+      .findOne({ _id: req.params.id }, " -__v")
+      .populate({ path: "createdBy", select: "-__v -password" })
+      .populate({ path: "updatedBy", select: "-__v -password" });
+
+    if (!company) {
+      return handleError(res, "Company không tồn tại.");
+    }
+    return res.json(company);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const deleteCompany = async (req, res, next) => {
+  let _id = req.params.id;
+  try {
+    let company = await companyModel.findOneAndRemove({ _id });
+    if (!company) {
+      return handleError(res, `Id: ${_id} không tồn tại.`);
+    }
+    return res.json({ msg: `Xóa Id: ${req.params.id} thành công.` });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export default {
   index,
   postIndex,
+  updateCompany,
+  detailCompany,
+  deleteCompany,
 };
