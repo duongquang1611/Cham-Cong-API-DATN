@@ -8,7 +8,10 @@ const postSignIn = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    let user = await userModel.findOne({ username }, "-__v");
+    let user = await userModel
+      .findOne({ username })
+      .select("-__v")
+      .populate({ path: "roleId" });
 
     if (!user) {
       return handleError(res, "Tài khoản không tồn tại.");
@@ -21,7 +24,7 @@ const postSignIn = async (req, res, next) => {
     const token = jwt.sign(
       {
         _id: user._id,
-        roleId: user.roleId,
+        role: user.roleId.code,
         username: user.username,
       },
       config.JWT_SECRET,

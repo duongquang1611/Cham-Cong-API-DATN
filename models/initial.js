@@ -49,8 +49,15 @@ const initialAdminSystem = async () => {
     let countUser = await User.estimatedDocumentCount();
     if (!countUser) {
       let role = await Role.findOne({ code: "admin_system" });
+      const passwordHash = await new User().encryptPassword(
+        ADMIN_DATA.password
+      );
       if (role) {
-        let adminData = { ...ADMIN_DATA, roleId: role._id };
+        let adminData = {
+          ...ADMIN_DATA,
+          roleId: role._id,
+          password: passwordHash,
+        };
         let user = await new User(adminData).save();
         if (user) {
           console.log("Add User Admin Success");

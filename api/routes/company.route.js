@@ -2,39 +2,27 @@ import express from "express";
 import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
-import auth from "../../middleware/auth.middleware.js";
 import companyModel from "../../models/company.model.js";
 import controller from "../controllers/company.controller.js";
 import middleware from "../../middleware/index.js";
 
 var router = express.Router();
+const { auth, checkObjectId, isAdminSystem } = middleware;
 
 // all company
 router.get("/", controller.index);
 
 // create company
-router.post("/", auth, controller.postIndex);
+router.post("/", [auth, isAdminSystem], controller.postIndex);
 
 // detail company
-router.get(
-  "/:id",
-  [middleware.auth, middleware.checkObjectId],
-  controller.detailCompany
-);
+router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
 // delete company
-router.delete(
-  "/:id",
-  [middleware.auth, middleware.checkObjectId],
-  controller.deleteCompany
-);
+router.delete("/:id", [auth, checkObjectId], controller.deleteCompany);
 
 // update commpany
-router.put(
-  "/:id",
-  [middleware.auth, middleware.checkObjectId],
-  controller.updateCompany
-);
+router.put("/:id", [auth, checkObjectId], controller.updateCompany);
 
 // setup location
 // router.put
