@@ -19,7 +19,11 @@ router.post("/", [auth, isAdminSystem], controller.postIndex);
 router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
 // delete company
-router.delete("/:id", [auth, checkObjectId], controller.deleteCompany);
+router.delete(
+  "/:id",
+  [auth, checkObjectId, isAdminSystem],
+  controller.deleteCompany
+);
 
 // update commpany
 router.put("/:id", [auth, checkObjectId], controller.updateCompany);
