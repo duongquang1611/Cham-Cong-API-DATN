@@ -15,6 +15,9 @@ router.get("/", controller.index);
 // create company
 router.post("/", [auth, isAdminSystem], controller.postIndex);
 
+// setup info to checkin
+router.put("/config", [auth, checkObjectId], controller.configCompany);
+
 // detail company
 router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
@@ -27,8 +30,5 @@ router.delete(
 
 // update commpany
 router.put("/:id", [auth, checkObjectId], controller.updateCompany);
-
-// setup location
-// router.put
 
 export default router;

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
 import companyModel from "../../models/company.model.js";
+import companyConfigModel from "../../models/companyConfig.model.js";
 const index = async (req, res, next) => {
   try {
     let companies = await companyModel
@@ -91,10 +92,26 @@ const deleteCompany = async (req, res, next) => {
   }
 };
 
+const configCompany = async (req, res, next) => {
+  try {
+    let updateData = req.body;
+    let query = { companyId: updateData.companyId };
+    let options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    // Since upsert creates a document if not finds a document, you don't need to create another one manually.
+    let config = await companyConfigModel
+      .findOneAndUpdate(query, updateData, options)
+      .select("-__v");
+    return res.json(config);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export default {
   index,
   postIndex,
   updateCompany,
   detailCompany,
   deleteCompany,
+  configCompany,
 };
