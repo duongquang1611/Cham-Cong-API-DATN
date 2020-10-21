@@ -12,6 +12,10 @@ const index = async (req, res, next) => {
       path: "roleId",
       select: "-__v",
     })
+    .populate({
+      path: "companyId",
+      select: "-__v",
+    })
     .sort({ updatedAt: -1 }) // new to old
     .select("-password")
     .then((items) => res.json(items));
@@ -23,6 +27,10 @@ const detailUser = async (req, res, next) => {
       .findOne({ _id: req.params.id }, "-password -__v")
       .populate({
         path: "roleId",
+        select: "-__v",
+      })
+      .populate({
+        path: "companyId",
         select: "-__v",
       })
       .select("-password");
@@ -56,8 +64,15 @@ const updateUser = async (req, res, next) => {
     // cach 1
     let newUser = await userModel
       .findByIdAndUpdate(_id, updateData, { new: true })
+      .populate({
+        path: "companyId",
+        select: "-__v",
+      })
+      .populate({
+        path: "roleId",
+        select: "-__v",
+      })
       .select("-__v -password")
-
       .exec();
 
     // cach 2
@@ -65,7 +80,9 @@ const updateUser = async (req, res, next) => {
     //   .findOneAndUpdate({ _id }, updateData, { new: true })
     //   .select("-__v -password")
     //   .exec();
-
+    if (!newUser) {
+      return handleError(res, "Cập nhật thông tin không thành công.");
+    }
     return res.json(newUser);
   } catch (error) {
     return handleError(res, error);

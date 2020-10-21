@@ -52,10 +52,7 @@ const postSignUp = async (req, res, next) => {
     }
 
     let newUser = new userModel({
-      username,
-      name,
-      phoneNumber,
-      roleId,
+      ...req.body,
     });
     const passwordHash = await newUser.encryptPassword(password);
     newUser.password = passwordHash;

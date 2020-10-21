@@ -36,4 +36,7 @@ router.put(
   controller.updateCompany
 );
 
+// setup location
+// router.put
+
 export default router;

@@ -1,5 +1,6 @@
 import Role from "../models/role.model.js";
-const Role_DATA = [
+import User from "../models/user.model.js";
+const ROLE_DATA = [
   {
     name: "Nhân viên",
     code: "staff",
@@ -21,36 +22,81 @@ const Role_DATA = [
     level: "",
   },
   {
-    name: "Quản  trị hệ thống",
+    name: "Quản trị hệ thống",
     code: "admin_system",
     level: "",
   },
 ];
-function initial() {
-  Role.estimatedDocumentCount((err, count) => {
-    if (!err && count === 0) {
-      // k co role thi add role
-      Role_DATA.map((item) => {
-        new Role(item).save((err) => {
-          if (err) {
-            console.log("error", err);
-          }
-          console.log(`added ${item.code} to roles collection`);
-        });
-      });
 
-      //   new Role({
-      //     name: "Admin",
-      //     code: "admin",
-      //     roleId: 3,
-      //   }).save((err) => {
-      //     if (err) {
-      //       console.log("error", err);
-      //     }
+const ADMIN_DATA = {
+  username: "admin",
+  password: 123456,
+  name: "Admin",
+  phoneNumber: "0123456789",
+};
 
-      //     console.log("added 'admin' to roles collection");
-      //   });
-    }
+const initialRole = () => {
+  let promises = [];
+
+  ROLE_DATA.forEach((element) => {
+    promises.push(new Role(element).save());
   });
-}
+
+  return promises;
+};
+const initialAdminSystem = async () => {
+  try {
+    let countUser = await User.estimatedDocumentCount();
+    if (!countUser) {
+      let role = await Role.findOne({ code: "admin_system" });
+      if (role) {
+        let adminData = { ...ADMIN_DATA, roleId: role._id };
+        let user = await new User(adminData).save();
+        if (user) {
+          console.log("Add User Admin Success");
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const initial = async () => {
+  try {
+    let countRole = await Role.estimatedDocumentCount();
+    if (!countRole) {
+      let rs = await Promise.all(initialRole());
+    }
+    await initialAdminSystem();
+  } catch (error) {
+    console.log(error);
+  }
+
+  //  => {
+  //     if (!err && count === 0) {
+  //       // k co role thi add role
+  //       ROLE_DATA.map((item) => {
+  //         new Role(item).save((err) => {
+  //           if (err) {
+  //             console.log("error", err);
+  //           }
+  //           console.log(`added ${item.code} to roles collection`);
+  //         });
+  //       });
+
+  //       //   new Role({
+  //       //     name: "Admin",
+  //       //     code: "admin",
+  //       //     roleId: 3,
+  //       //   }).save((err) => {
+  //       //     if (err) {
+  //       //       console.log("error", err);
+  //       //     }
+
+  //       //     console.log("added 'admin' to roles collection");
+  //       //   });
+  //     }
+  //   });
+};
 export default initial;

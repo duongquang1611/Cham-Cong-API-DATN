@@ -6,18 +6,23 @@ const { Types, Schema, model } = mongoose;
 
 // định nghĩ cấu trúc user model
 var userSchema = new Schema({
-  username: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  name: { type: String, default: "" },
-  roleId: { type: Types.ObjectId, required: true, ref: "Role" },
-  parentId: { type: Types.ObjectId, ref: "User" },
-  phoneNumber: { type: String },
+  username: { type: String, unique: true, required: true, default: null },
+  password: { type: String, required: true, default: null },
+  name: { type: String, default: null },
+  roleId: { type: Types.ObjectId, required: true, ref: "Role", default: null },
+  companyId: {
+    type: Types.ObjectId,
+    ref: "Company",
+    default: null,
+  },
+  parentId: { type: Types.ObjectId, ref: "User", default: null },
+  phoneNumber: { type: String, default: null },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date, default: Date.now() },
-  address: { type: String },
-  email: { type: String },
-  gender: { type: Number },
-  dateOfBirth: { type: Date },
+  address: { type: String, default: null },
+  email: { type: String, default: null },
+  gender: { type: Number, default: null },
+  dateOfBirth: { type: Date, default: null },
 });
 userSchema.methods.encryptPassword = function (password) {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(5), null);
