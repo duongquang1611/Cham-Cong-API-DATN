@@ -1,6 +1,7 @@
 // models/user.model.js
 // load những thư viện chúng ta cần
 import mongoose from "mongoose";
+import moment from "moment";
 import bcrypt from "bcrypt-nodejs";
 const { Types, Schema, model } = mongoose;
 

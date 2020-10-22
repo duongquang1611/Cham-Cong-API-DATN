@@ -25,10 +25,13 @@ const postSignIn = async (req, res, next) => {
       {
         _id: user._id,
         role: user.roleId.code,
+        parentId: user.parentId,
+        companyId: user.companyId,
         username: user.username,
       },
       config.JWT_SECRET,
-      { expiresIn: 36000000 }
+      // default expired token la 30 ngay
+      { expiresIn: 30 * 60 * 60 * 1000 }
     );
 
     let userWithoutPassword = { ...user._doc };
@@ -60,13 +63,16 @@ const postSignUp = async (req, res, next) => {
     const passwordHash = await newUser.encryptPassword(password);
     newUser.password = passwordHash;
 
-    const savedUser = await newUser.save();
-
+    let savedUser = await newUser.save();
+    savedUser = await userModel.populate(savedUser, {
+      path: "roleId companyId parentId",
+      select: "-__v -password",
+    });
     if (!savedUser) return handleError("Lỗi khi lưu thông tin user");
 
     let userWithoutPassword = { ...savedUser._doc };
     delete userWithoutPassword["password"];
-    return res.status(201).json(userWithoutPassword);
+    return res.status(201).json(savedUser);
 
     // newUser.save(function (err, user) {
     //   if (err) {

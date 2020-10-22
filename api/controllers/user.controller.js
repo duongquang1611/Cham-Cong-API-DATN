@@ -33,7 +33,8 @@ const detailUser = async (req, res, next) => {
         path: "companyId",
         select: "-__v",
       })
-      .select("-password");
+      .select("-password")
+      .exec();
 
     if (!user) {
       return handleError(res, "User không tồn tại.");

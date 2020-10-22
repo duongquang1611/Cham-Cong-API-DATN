@@ -98,10 +98,18 @@ const configCompany = async (req, res, next) => {
     let query = { companyId: updateData.companyId };
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
     // Since upsert creates a document if not finds a document, you don't need to create another one manually.
-    let config = await companyConfigModel
-      .findOneAndUpdate(query, updateData, options)
-      .select("-__v");
-    return res.json(config);
+
+    // validate input
+    let checkConfig = new companyConfigModel(req.body).validateSync();
+    if (!checkConfig) {
+      // k loi thi update or create
+      let config = await companyConfigModel
+        .findOneAndUpdate(query, updateData, options)
+        .select("-__v");
+      return res.json(config);
+    } else {
+      return handleError(res, checkConfig.errors);
+    }
   } catch (error) {
     return handleError(res, error);
   }

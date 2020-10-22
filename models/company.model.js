@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import moment from "moment";
 const { Types, Schema, model } = mongoose;
 
 // định nghĩ cấu trúc company model
@@ -7,7 +8,7 @@ var companySchema = new Schema(
     name: { type: String, required: true, default: null },
     phoneNumber: { type: String, default: null },
     email: { type: String, default: null },
-    address: { type: Types.ObjectId, default: null },
+    address: { type: String, default: null },
     createdBy: {
       type: Types.ObjectId,
       ref: "User",
