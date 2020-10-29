@@ -36,7 +36,7 @@ const postSignIn = async (req, res, next) => {
 
     let userWithoutPassword = { ...user._doc };
     delete userWithoutPassword["password"];
-    return res.json({ token, user: userWithoutPassword });
+    return res.status(200).json({ token, user: userWithoutPassword });
   } catch (error) {
     handleError(res, error);
   }

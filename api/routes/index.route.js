@@ -5,7 +5,7 @@ var passport = require("passport");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.json({ msg: "Home Page" });
+  res.status(200).json({ msg: "Home Page" });
 });
 
 module.exports = router;

@@ -18,7 +18,7 @@ const index = async (req, res, next) => {
     })
     .sort({ updatedAt: -1 }) // new to old
     .select("-password")
-    .then((items) => res.json(items));
+    .then((items) => res.status(200).json(items));
 };
 
 const detailUser = async (req, res, next) => {
@@ -39,7 +39,7 @@ const detailUser = async (req, res, next) => {
     if (!user) {
       return handleError(res, "User không tồn tại.");
     }
-    return res.json(user);
+    return res.status(200).json(user);
   } catch (error) {
     return handleError(res, error);
   }
@@ -52,7 +52,9 @@ const deleteUser = async (req, res, next) => {
     if (!user) {
       return handleError(res, `Id: ${_id} không tồn tại.`);
     }
-    return res.json({ msg: `Xóa Id: ${req.params.id} thành công.` });
+    return res
+      .status(200)
+      .json({ msg: `Xóa Id: ${req.params.id} thành công.` });
   } catch (error) {
     return handleError(res, error);
   }
@@ -84,7 +86,7 @@ const updateUser = async (req, res, next) => {
     if (!newUser) {
       return handleError(res, "Cập nhật thông tin không thành công.");
     }
-    return res.json(newUser);
+    return res.status(200).json(newUser);
   } catch (error) {
     return handleError(res, error);
   }

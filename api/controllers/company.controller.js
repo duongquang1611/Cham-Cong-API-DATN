@@ -10,7 +10,7 @@ const index = async (req, res, next) => {
       .populate("createdBy", "-__v -password")
       .populate("updatedBy", "-__v -password")
       .sort({ updatedAt: -1 });
-    return res.json(companies);
+    return res.status(200).json(companies);
   } catch (error) {
     return handleError(res, error);
   }
@@ -57,7 +57,7 @@ const updateCompany = async (req, res, next) => {
     //   .select("-__v ")
     //   .exec();
 
-    return res.json(newCompany);
+    return res.status(200).json(newCompany);
   } catch (error) {
     return handleError(res, error);
   }
@@ -73,7 +73,7 @@ const detailCompany = async (req, res, next) => {
     if (!company) {
       return handleError(res, "Company không tồn tại.");
     }
-    return res.json(company);
+    return res.status(200).json(company);
   } catch (error) {
     return handleError(res, error);
   }
@@ -86,7 +86,9 @@ const deleteCompany = async (req, res, next) => {
     if (!company) {
       return handleError(res, `Id: ${_id} không tồn tại.`);
     }
-    return res.json({ msg: `Xóa Id: ${req.params.id} thành công.` });
+    return res
+      .status(200)
+      .json({ msg: `Xóa Id: ${req.params.id} thành công.` });
   } catch (error) {
     return handleError(res, error);
   }
@@ -106,7 +108,7 @@ const configCompany = async (req, res, next) => {
       let config = await companyConfigModel
         .findOneAndUpdate(query, updateData, options)
         .select("-__v");
-      return res.json(config);
+      return res.status(200).json(config);
     } else {
       return handleError(res, checkConfig.errors);
     }
