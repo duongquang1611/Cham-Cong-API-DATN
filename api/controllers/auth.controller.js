@@ -11,7 +11,8 @@ const postSignIn = async (req, res, next) => {
     let user = await userModel
       .findOne({ username })
       .select("-__v")
-      .populate({ path: "roleId" });
+      .populate({ path: "roleId" })
+      .populate({ path: "companyId" });
 
     if (!user) {
       return handleError(res, "Tài khoản không tồn tại.");
