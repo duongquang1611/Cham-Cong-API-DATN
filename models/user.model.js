@@ -30,6 +30,7 @@ var userSchema = new Schema(
     email: { type: String, default: null },
     gender: { type: Number, default: null },
     dateOfBirth: { type: Date, default: null },
+    avatar: { type: String, default: null },
   },
   { timestamps: true }
 );
