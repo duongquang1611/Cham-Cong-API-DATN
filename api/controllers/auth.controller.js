@@ -12,11 +12,11 @@ const postSignIn = async (req, res, next) => {
       .findOne({ username })
       .select("-__v")
       .populate({ path: "roleId" })
-      .populate({ path: "companyId" })
-      .populate({
-        path: "parentId",
-        select: "-__v -password",
-      });
+      .populate({ path: "companyId" });
+    // .populate({
+    //   path: "parentId",
+    //   select: "-__v -password",
+    // });
 
     if (!user) {
       return handleError(res, "Tài khoản không tồn tại.");
