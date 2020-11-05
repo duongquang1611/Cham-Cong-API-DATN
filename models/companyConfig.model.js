@@ -16,6 +16,8 @@ var companyConfigSchema = new Schema(
     endBreak: { type: String, required: true, default: "14:00:00" },
     checkin: { type: String, required: true, default: "08:00:00" },
     checkout: { type: String, required: true, default: "18:00:00" },
+    allowCheckin: { type: String, required: true, default: "06:30:00" },
+    allowCheckout: { type: String, required: true, default: "22:00:00" },
     maxMinutesComeLate: {
       type: Number,
       required: true,
