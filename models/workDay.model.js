@@ -26,7 +26,7 @@ var workDaySchema = new Schema(
     minutesComeLate: { type: Number, default: 0 },
     minutesLeaveEarly: { type: Number, default: 0 },
     isDayOff: { type: Boolean, default: false },
-    isCheckining: { type: Boolean, default: false },
+    isSuccessDay: { type: Boolean, default: false },
   },
   {
     timestamps: true,
