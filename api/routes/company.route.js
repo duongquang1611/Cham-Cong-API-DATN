@@ -21,6 +21,9 @@ router.put("/config", [auth, checkObjectId], controller.configCompany);
 // detail company
 router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
+// user in company
+router.get("/:id/users", [auth, checkObjectId], controller.getUserCompany);
+
 // delete company
 router.delete(
   "/:id",

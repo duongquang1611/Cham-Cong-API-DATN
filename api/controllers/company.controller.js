@@ -3,6 +3,7 @@ import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
 import companyModel from "../../models/company.model.js";
 import companyConfigModel from "../../models/companyConfig.model.js";
+import userController from "./user.controller.js";
 const index = async (req, res, next) => {
   try {
     let companies = await companyModel
@@ -117,6 +118,20 @@ const configCompany = async (req, res, next) => {
   }
 };
 
+const getUserCompany = async (req, res, next) => {
+  let _id = req.params.id;
+  // Object.entries(req.query).map(([key, value]) => {
+  //   req.query[key] = `/${req.query[key].toLowerCase()}/i`;
+  // });
+  // console.log("req.query", req.query);
+  req.query = { ...req.query, companyId: _id };
+  try {
+    userController.index(req, res, next);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export default {
   index,
   postIndex,
@@ -124,4 +139,5 @@ export default {
   detailCompany,
   deleteCompany,
   configCompany,
+  getUserCompany,
 };

@@ -5,20 +5,36 @@ import config from "../../config/index.js";
 import mongoose from "mongoose";
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
+// search all user
 const index = async (req, res, next) => {
-  userModel
-    .find({}, "-__v")
-    .populate({
-      path: "roleId",
-      select: "-__v",
-    })
-    .populate({
-      path: "companyId",
-      select: "-__v",
-    })
-    .sort({ updatedAt: -1 }) // new to old
-    .select("-password")
-    .then((items) => res.status(200).json(items));
+  try {
+    const { name = "", companyId = "", username = "" } = req.query;
+    console.log(" req.query", req.query);
+
+    let users = await userModel
+      .find(
+        {
+          companyId: companyId,
+          name: { $regex: name, $options: "$i" },
+          username: { $regex: username, $options: "$i" },
+        },
+        "-__v"
+      )
+      .populate({
+        path: "roleId",
+        select: "-__v",
+      })
+      .populate({
+        path: "companyId",
+        select: "-__v",
+      })
+      .sort({ updatedAt: -1 }) // new to old
+      .select("-password");
+    console.log("users", users.length);
+    return res.status(200).json(users);
+  } catch (error) {
+    return handleError(res, error);
+  }
 };
 
 const detailUser = async (req, res, next) => {
