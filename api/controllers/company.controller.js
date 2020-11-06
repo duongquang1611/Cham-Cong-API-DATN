@@ -4,6 +4,8 @@ import commons from "../../commons/index.js";
 import companyModel from "../../models/company.model.js";
 import companyConfigModel from "../../models/companyConfig.model.js";
 import userController from "./user.controller.js";
+const { Types } = mongoose;
+
 const index = async (req, res, next) => {
   try {
     let companies = await companyModel
@@ -70,12 +72,14 @@ const detailCompany = async (req, res, next) => {
       .findOne({ _id: req.params.id }, " -__v")
       .populate({ path: "createdBy", select: "-__v -password" })
       .populate({ path: "updatedBy", select: "-__v -password" });
-
+    let config = await companyConfigModel.findOne({ companyId: req.params.id });
     if (!company) {
       return handleError(res, "Company không tồn tại.");
     }
+    company = { ...company._doc, config: { ...config._doc } };
     return res.status(200).json(company);
   } catch (error) {
+    console.log("error", error);
     return handleError(res, error);
   }
 };

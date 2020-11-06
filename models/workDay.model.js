@@ -22,7 +22,7 @@ var workDaySchema = new Schema(
     statusComeLateAsk: { type: Number, default: null },
     statusLeaveEarlyAsk: { type: Number, default: null },
     reasonComeLateAsk: { type: String, default: null },
-    reasonComeLateAsk: { type: String, default: null },
+    reasonLeaveEarlyAsk: { type: String, default: null },
     minutesComeLate: { type: Number, default: 0 },
     minutesLeaveEarly: { type: Number, default: 0 },
     isDayOff: { type: Boolean, default: false },

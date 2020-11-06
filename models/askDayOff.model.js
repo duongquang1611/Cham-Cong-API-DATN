@@ -14,7 +14,7 @@ var askDayOffSchema = new Schema(
     parentId: { type: String, default: null, ref: "User" },
     fromDate: { type: Date, default: null },
     toDate: { type: Date, default: null },
-
+    title: { type: String, default: null },
     reason: { type: String, default: null },
     status: { type: Number, default: null },
     // 0: chờ duyệt
