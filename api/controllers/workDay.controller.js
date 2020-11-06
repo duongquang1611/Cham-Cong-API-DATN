@@ -11,7 +11,7 @@ const index = async (req, res, next) => {
   try {
     return res.status(200).json({});
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, JSON.stringify(error));
   }
 };
 
@@ -19,7 +19,7 @@ const getDetailWorkDay = async (req, res, next) => {
   try {
     return res.status(200).json();
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, JSON.stringify(error));
   }
 };
 
@@ -29,7 +29,7 @@ const getListWorkDayCompany = async (req, res, next) => {
     let workDays = await workDayModel.findOne({ companyId: companyId });
     return res.status(200).json(workDays || []);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, JSON.stringify(error));
   }
 };
 
@@ -40,7 +40,7 @@ const updateWorkDay = async (req, res, next) => {
     let now = moment();
 
     if (updateData.user) {
-      // cham cong ho
+      // cham cong ho, truyen user vao body
       req.user = updateData.user;
     }
     let { user } = req;
@@ -100,6 +100,7 @@ const updateWorkDay = async (req, res, next) => {
       query.dayWork = now.format(commons.formatDayWork);
     }
 
+    // time checkin auto khoi tao khi tao ban ghi
     if (updateData.isCheckout) {
       // checkout
 
@@ -109,6 +110,7 @@ const updateWorkDay = async (req, res, next) => {
         ...updateData,
         isSuccessDay: true,
         minutesLeaveEarly: diff < 0 ? 0 : diff, // checkout sau gio hanh chinh thi 0 phut di muon
+        checkout: now,
       };
     } else {
       let diff = commons.getDurationToMinutes(now, defaultCheckin, false);
@@ -127,7 +129,7 @@ const updateWorkDay = async (req, res, next) => {
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, JSON.stringify(error));
   }
 };
 
