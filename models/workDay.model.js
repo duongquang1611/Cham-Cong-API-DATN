@@ -1,31 +1,32 @@
 import mongoose from "mongoose";
 import moment from "moment";
 const { Types, model, Schema } = mongoose;
-const formatDayWork = "YYYY-MM-DD";
+import commons from "../commons/index.js";
+
 var workDaySchema = new Schema(
   {
-    userId: { type: Types.ObjectId, required: true, ref: "User" },
-    parentId: { type: Types.ObjectId, ref: "User", default: null },
-    companyId: { type: Types.ObjectId, ref: "Company", default: null },
+    userId: { type: Types.ObjectId, required: true, ref: "User" }, //put neu cham cong ho
+    parentId: { type: Types.ObjectId, ref: "User", default: null }, //put neu cham cong ho
+    companyId: { type: Types.ObjectId, ref: "Company", default: null }, //put neu cham cong ho
     dayWork: {
       type: String,
       required: true,
-      default: moment().format(formatDayWork),
+      default: moment().format(commons.formatDayWork),
     },
-    day: { type: Number, default: null },
-    month: { type: Number, default: null },
-    year: { type: Number, default: null },
-    checkin: { type: Date, default: null },
-    checkout: { type: Date, default: null },
-    timeComeLateAsk: { type: String, default: null },
-    timeLeaveEarlyAsk: { type: String, default: null },
-    statusComeLateAsk: { type: Number, default: null },
-    statusLeaveEarlyAsk: { type: Number, default: null },
-    reasonComeLateAsk: { type: String, default: null },
-    reasonLeaveEarlyAsk: { type: String, default: null },
-    minutesComeLate: { type: Number, default: 0 },
-    minutesLeaveEarly: { type: Number, default: 0 },
-    isDayOff: { type: Boolean, default: false },
+    day: { type: Number, default: moment().format("D") },
+    month: { type: Number, default: moment().format("M") },
+    year: { type: Number, default: moment().format("YYYY") },
+    checkin: { type: Date, default: moment() },
+    checkout: { type: Date, default: null }, // put
+    timeComeLateAsk: { type: String, default: null }, //put
+    timeLeaveEarlyAsk: { type: String, default: null }, //put
+    statusComeLateAsk: { type: Number, default: null }, //put
+    statusLeaveEarlyAsk: { type: Number, default: null }, //put
+    reasonComeLateAsk: { type: String, default: null }, //put
+    reasonLeaveEarlyAsk: { type: String, default: null }, //put
+    minutesComeLate: { type: Number, default: 0 }, //put
+    minutesLeaveEarly: { type: Number, default: 0 }, //put
+    isDayOff: { type: Boolean, default: false }, //put
     isSuccessDay: { type: Boolean, default: false },
   },
   {
