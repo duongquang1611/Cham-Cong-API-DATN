@@ -13,10 +13,10 @@ const getUserIdInToken = (req) => {
   return decodedToken;
 };
 
-const getDiffTime = (date) => {
+const getDiffTime = (date1, date2 = new Date()) => {
   // date full
   let diff = moment
-    .utc(moment(new Date(), "HH:mm:ss").diff(date))
+    .utc(moment(date2, "HH:mm:ss").diff(date1))
     .format("HH:mm:ss");
   return diff;
 };

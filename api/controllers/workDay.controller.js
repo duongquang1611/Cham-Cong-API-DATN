@@ -6,18 +6,40 @@ import workDayModel from "../../models/workDay.model.js";
 import moment from "moment";
 import resources from "../resources/index.js";
 
-// search all user
+// search all work day
 const index = async (req, res, next) => {
   try {
-    return res.status(200).json({});
+    let {
+      dayWork = moment().format(commons.formatDayWork),
+      userId,
+    } = req.query;
+    console.log(" req.query", req.query);
+    if (!userId) {
+      // cham cong ho
+      userId = req.user._id;
+    }
+    console.log(dayWork, userId);
+    let workDays = await workDayModel.find(
+      {
+        dayWork: new RegExp(dayWork, "i"),
+        userId: userId,
+      },
+      "-__v"
+    );
+
+    return res.status(200).json(workDays || []);
   } catch (error) {
-    return handleError(res, JSON.stringify(error));
+    console.log("error", error);
+    return handleError(res, error);
   }
 };
 
 const getDetailWorkDay = async (req, res, next) => {
+  let _id = req.params.id;
   try {
-    return res.status(200).json();
+    let workDay = await workDayModel.findOne({ _id: id });
+
+    return res.status(200).json(workDay || {});
   } catch (error) {
     return handleError(res, JSON.stringify(error));
   }
@@ -68,6 +90,7 @@ const updateWorkDay = async (req, res, next) => {
     );
 
     // check allow checkout, checkin
+
     if (updateData.isCheckout) {
       let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckout);
       if (checkIsBeforeDate) {
@@ -114,8 +137,10 @@ const updateWorkDay = async (req, res, next) => {
       };
     } else {
       let diff = commons.getDurationToMinutes(now, defaultCheckin, false);
+      console.log("now, defaultCheckin", now, defaultCheckin);
       updateData = {
         ...updateData,
+        checkin: now,
         minutesComeLate: diff > 0 ? diff : 0,
       };
     }
