@@ -21,13 +21,23 @@ const getDiffTime = (date1, date2 = new Date()) => {
   return diff;
 };
 
-const setTimeToDate = (date, time) => {
+const setTimeToDate = (time, date = new Date()) => {
   // date: format ISOString, exam: 2020-11-06T10:18:33.145Z
   // time: HH:mm:ss
-  date = new Date(date).toISOString();
-  let dateDay = date.split("T")[0];
-
-  return dateDay + "T" + time + "Z";
+  console.log(time);
+  let pieces = time.split(":");
+  let hour = 0,
+    minute = 0,
+    second = 0;
+  if (pieces.length === 3) {
+    hour = parseInt(pieces[0], 10);
+    minute = parseInt(pieces[1], 10);
+    second = parseInt(pieces[2], 10);
+  }
+  date.setSeconds(second);
+  date.setMinutes(minute);
+  date.setHours(hour);
+  return date;
 };
 
 const isBeforeDate = (date1, date2) => {

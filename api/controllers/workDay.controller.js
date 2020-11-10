@@ -72,27 +72,17 @@ const updateWorkDay = async (req, res, next) => {
 
     // get config company
     let detailCompany = await resources.getDetailCompany(user.companyId._id);
-    let allowCheckin = commons.setTimeToDate(
-      now,
-      detailCompany.config.allowCheckin
-    );
+    let allowCheckin = commons.setTimeToDate(detailCompany.config.allowCheckin);
     let allowCheckout = commons.setTimeToDate(
-      now,
       detailCompany.config.allowCheckout
     );
-    let defaultCheckin = commons.setTimeToDate(
-      now,
-      detailCompany.config.checkin
-    );
-    let defaultCheckout = commons.setTimeToDate(
-      now,
-      detailCompany.config.checkout
-    );
+    let defaultCheckin = commons.setTimeToDate(detailCompany.config.checkin);
+    let defaultCheckout = commons.setTimeToDate(detailCompany.config.checkout);
 
     // check allow checkout, checkin
 
     if (updateData.isCheckout) {
-      let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckout);
+      let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
       if (checkIsBeforeDate) {
         return handleError(
           res,
@@ -100,7 +90,8 @@ const updateWorkDay = async (req, res, next) => {
         );
       }
     } else {
-      let checkIsBeforeDate = commons.isBeforeDate(allowCheckin, now);
+      let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckin);
+
       if (checkIsBeforeDate) {
         return handleError(
           res,
