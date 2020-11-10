@@ -10,7 +10,8 @@ import resources from "../resources/index.js";
 const index = async (req, res, next) => {
   try {
     let {
-      dayWork = moment().format(commons.formatDayWork),
+      // dayWork = moment().format(commons.formatDayWork),
+      dayWork,
       userId,
     } = req.query;
     console.log(" req.query", req.query);
@@ -18,14 +19,17 @@ const index = async (req, res, next) => {
       // cham cong ho
       userId = req.user._id;
     }
-    console.log(dayWork, userId);
-    let workDays = await workDayModel.find(
-      {
-        dayWork: new RegExp(dayWork, "i"),
-        userId: userId,
-      },
-      "-__v"
-    );
+
+    let sortTimeDESC = { updatedAt: -1 };
+    let workDays = await workDayModel
+      .find(
+        {
+          dayWork: new RegExp(dayWork, "i"),
+          userId: userId,
+        },
+        "-__v"
+      )
+      .sort(sortTimeDESC || {});
 
     return res.status(200).json(workDays || []);
   } catch (error) {
@@ -81,24 +85,23 @@ const updateWorkDay = async (req, res, next) => {
 
     // check allow checkout, checkin
 
-    if (updateData.isCheckout) {
-      let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
-      if (checkIsBeforeDate) {
-        return handleError(
-          res,
-          `Không thể thực hiện checkout sau ${detailCompany.config.allowCheckout}`
-        );
-      }
-    } else {
-      let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckin);
-
-      if (checkIsBeforeDate) {
-        return handleError(
-          res,
-          `Không thể thực hiện checkin trước ${detailCompany.config.allowCheckin}`
-        );
-      }
-    }
+    // if (updateData.isCheckout) {
+    //   let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
+    //   if (checkIsBeforeDate) {
+    //     return handleError(
+    //       res,
+    //       `Không thể thực hiện checkout sau ${detailCompany.config.allowCheckout}`
+    //     );
+    //   }
+    // } else {
+    //   let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckin);
+    //   if (checkIsBeforeDate) {
+    //     return handleError(
+    //       res,
+    //       `Không thể thực hiện checkin trước ${detailCompany.config.allowCheckin}`
+    //     );
+    //   }
+    // }
 
     // set parentId, company
     updateData = {
@@ -118,8 +121,8 @@ const updateWorkDay = async (req, res, next) => {
     if (updateData.isCheckout) {
       // checkout
 
-      let diff = commons.getDurationToMinutes(now, defaultCheckout, false);
-
+      let diff = commons.getDurationToMinutes(defaultCheckout, now, false);
+      // date1 - date2
       updateData = {
         ...updateData,
         isSuccessDay: true,
@@ -127,12 +130,12 @@ const updateWorkDay = async (req, res, next) => {
         checkout: now,
       };
     } else {
-      let diff = commons.getDurationToMinutes(now, defaultCheckin, false);
-      console.log("now, defaultCheckin", now, defaultCheckin);
+      let diff = commons.getDurationToMinutes(defaultCheckin, now, false);
+      // date1-date2
       updateData = {
         ...updateData,
         checkin: now,
-        minutesComeLate: diff > 0 ? diff : 0,
+        minutesComeLate: diff < 0 ? Math.abs(diff) : 0,
       };
     }
 

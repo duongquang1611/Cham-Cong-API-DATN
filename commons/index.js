@@ -40,15 +40,19 @@ const setTimeToDate = (time, date = new Date()) => {
   return date;
 };
 
+const rangeTimeDate = (date1, date2) => {
+  return new Date(date1).getTime() - new Date(date2).getTime();
+};
+
 const isBeforeDate = (date1, date2) => {
-  let check = new Date(date1).getTime() - new Date(date2).getTime();
+  let check = rangeTimeDate(date1, date2);
   return check < 0;
 };
 const subDateToTime = (date1, date2, hasAbs = true) => {
   if (hasAbs) {
-    return Math.abs(new Date(date1).getTime() - new Date(date2).getTime());
+    return Math.abs(rangeTimeDate(date1, date2));
   }
-  return new Date(date1).getTime() - new Date(date2).getTime();
+  return rangeTimeDate(date1, date2);
 };
 
 const getDurationToMinutes = (date1, date2, hasAbs = true, round = true) => {
@@ -70,6 +74,7 @@ const commons = {
   subDateToTime,
   getDurationToMinutes,
   isBeforeDate,
+  rangeTimeDate,
 };
 
 export default commons;
