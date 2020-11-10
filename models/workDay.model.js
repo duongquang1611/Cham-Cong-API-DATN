@@ -16,7 +16,7 @@ var workDaySchema = new Schema(
     day: { type: Number, default: moment().format("D") },
     month: { type: Number, default: moment().format("M") },
     year: { type: Number, default: moment().format("YYYY") },
-    checkin: { type: Date, default: moment() },
+    checkin: { type: Date, default: null },
     checkout: { type: Date, default: null }, // put
     timeComeLateAsk: { type: String, default: null }, //put
     timeLeaveEarlyAsk: { type: String, default: null }, //put
