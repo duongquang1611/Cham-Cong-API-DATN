@@ -65,6 +65,30 @@ const getDurationToMinutes = (date1, date2, hasAbs = true, round = true) => {
   return minutes;
 };
 
+const lookUp = (localField, from, foreignField, as) => {
+  return {
+    $lookup: {
+      localField,
+      from,
+      foreignField,
+      as: as || localField,
+    },
+  };
+};
+
+const groupBy = (_id = null) => {
+  return {
+    $group: {
+      _id: _id,
+      count: { $sum: 1 },
+      results: { $push: "$$ROOT" },
+    },
+  };
+};
+const getPageSize = (page, size) => {
+  return [{ $skip: page * size }, { $limit: parseInt(size) }];
+};
+
 const commons = {
   handleError,
   getUserIdInToken,
@@ -75,6 +99,9 @@ const commons = {
   getDurationToMinutes,
   isBeforeDate,
   rangeTimeDate,
+  lookUp,
+  groupBy,
+  getPageSize,
 };
 
 export default commons;

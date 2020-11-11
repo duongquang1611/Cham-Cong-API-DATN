@@ -8,13 +8,32 @@ const { Types } = mongoose;
 
 const index = async (req, res, next) => {
   try {
-    let companies = await companyModel
+    let companies = {};
+    companies = await companyModel
       .find({}, "-__v")
       .populate("createdBy", "-__v -password")
       .populate("updatedBy", "-__v -password")
       .sort({ updatedAt: -1 });
+
+    // companies = await companyModel.aggregate([
+    //   {
+    //     // {
+    //     //   from: <collection to join>,
+    //     //   localField: <field from the input documents>,
+    //     //   foreignField: <field from the documents of the "from" collection>,
+    //     //   as: <output array field>
+    //     // }
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "createdBy",
+    //       foreignField: "_id",
+    //       as: "cre",
+    //     },
+    //   },
+    // ]);
     return res.status(200).json(companies);
   } catch (error) {
+    console.log("error", error);
     return handleError(res, error);
   }
 };

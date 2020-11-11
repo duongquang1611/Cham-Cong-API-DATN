@@ -5,6 +5,9 @@ import mongoose from "mongoose";
 import workDayModel from "../../models/workDay.model.js";
 import moment from "moment";
 import resources from "../resources/index.js";
+const { Types } = mongoose;
+
+var SORT_TIME_DESC = { updatedAt: -1 };
 
 // search all work day
 const index = async (req, res, next) => {
@@ -20,7 +23,6 @@ const index = async (req, res, next) => {
       userId = req.user._id;
     }
 
-    let sortTimeDESC = { updatedAt: -1 };
     let workDays = await workDayModel
       .find(
         {
@@ -29,7 +31,7 @@ const index = async (req, res, next) => {
         },
         "-__v"
       )
-      .sort(sortTimeDESC || {});
+      .sort(SORT_TIME_DESC);
 
     return res.status(200).json(workDays || []);
   } catch (error) {
@@ -51,11 +53,52 @@ const getDetailWorkDay = async (req, res, next) => {
 
 const getListWorkDayCompany = async (req, res, next) => {
   let companyId = req.params.id;
+
+  const { page = 0, size = 10000, date } = req.query;
+  let month = moment(date).format("M");
+  let year = moment(date).format("YYYY");
+  console.log("month", month, year);
   try {
-    let workDays = await workDayModel.findOne({ companyId: companyId });
+    let workDays = await workDayModel.aggregate([
+      {
+        $match: {
+          companyId: Types.ObjectId(companyId),
+          month: parseInt(month),
+          year: parseInt(year),
+        },
+      },
+      { $sort: SORT_TIME_DESC },
+      ...commons.getPageSize(page, size),
+
+      //    from: <collection to join>,
+      //    localField: <field from the input documents>,
+      //    foreignField: <field from the documents of the "from" collection>,
+      //    as: <output array field>
+      commons.lookUp("userId", "users", "_id", "userId"),
+      { $unwind: { path: "$userId" } }, // bo [] => {} userId
+      commons.lookUp("parentId", "users", "_id", "parentId"),
+      { $unwind: "$parentId" },
+      {
+        $project: {
+          // select field to show, hide
+          "userId.password": 0,
+          "parentId.password": 0,
+          __v: 0,
+        },
+      },
+      // {
+      //   $group: {
+      //     _id: companyId,
+      //     count: { $sum: 1 },
+      //     results: { $push: "$$ROOT" },
+      //   },
+      // },
+      commons.groupBy(companyId),
+    ]);
     return res.status(200).json(workDays || []);
   } catch (error) {
-    return handleError(res, JSON.stringify(error));
+    console.log("error", error);
+    return handleError(res, error);
   }
 };
 
