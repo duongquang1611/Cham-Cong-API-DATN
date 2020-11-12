@@ -8,30 +8,79 @@ import resources from "../resources/index.js";
 const { Types } = mongoose;
 
 var SORT_TIME_DESC = { updatedAt: -1 };
+var SORT_DAY_WORK = { dayWork: -1 };
 
 // search all work day
 const index = async (req, res, next) => {
   try {
+    let workDays = [];
+
+    // let {
+    //   // dayWork = moment().format(commons.formatDayWork),
+    //   dayWork,
+    //   userId,
+    // } = req.query;
+
+    // console.log(" req.query", req.query);
+    // if (!userId) {
+    //   // cham cong ho
+    //   // userId = req.user._id;
+    // }
+
+    // workDays = await workDayModel
+    //   .find(
+    //     {
+    //       dayWork: new RegExp(dayWork, "i"),
+    //       userId: userId,
+    //     },
+    //     "-__v"
+    //   )
+    //   .sort(SORT_DAY_WORK);
+
     let {
-      // dayWork = moment().format(commons.formatDayWork),
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
       dayWork,
       userId,
+      ...otherSearch
     } = req.query;
-    console.log(" req.query", req.query);
-    if (!userId) {
-      // cham cong ho
-      userId = req.user._id;
+
+    let search = {};
+
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
     }
 
-    let workDays = await workDayModel
-      .find(
-        {
-          dayWork: new RegExp(dayWork, "i"),
-          userId: userId,
-        },
-        "-__v"
-      )
-      .sort(SORT_TIME_DESC);
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search);
+
+    workDays = await workDayModel.aggregate([
+      {
+        $match: search,
+      },
+      {
+        $sort: SORT_DAY_WORK,
+      },
+      ...commons.getPageSize(page, size),
+      commons.groupBy(),
+    ]);
 
     return res.status(200).json(workDays || []);
   } catch (error) {
@@ -79,7 +128,7 @@ const getListWorkDayCompany = async (req, res, next) => {
           },
         },
       },
-      { $sort: SORT_TIME_DESC },
+      { $sort: SORT_DAY_WORK },
       ...commons.getPageSize(page, size),
 
       //    from: <collection to join>,
