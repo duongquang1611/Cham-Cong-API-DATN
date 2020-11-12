@@ -91,9 +91,9 @@ const getPageSize = (page, size) => {
 
 const getDetailDate = (date) => {
   return {
-    day: moment(date).format("D"),
-    month: moment(date).format("M"),
-    year: moment(date).format("YYYY"),
+    day: parseInt(moment(date).format("D"), 10),
+    month: parseInt(moment(date).format("M"), 10),
+    year: parseInt(moment(date).format("YYYY"), 10),
   };
 };
 const isNumeric = (str) => {

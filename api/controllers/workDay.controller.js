@@ -263,13 +263,14 @@ const askComeLeave = async (req, res, next) => {
     let dayWork = moment(time).format(commons.formatDayWork);
 
     let query = {
-      userId: req.user._id,
+      userId: Types.ObjectId(req.user._id),
       dayWork: dayWork,
-      ...commons.getDetailDate(time),
     };
+
     let updateData = {
       parentId: req.user.parentId._id,
       companyId: req.user.companyId._id,
+      ...commons.getDetailDate(time),
     };
 
     // 0: chờ duyệt
