@@ -41,6 +41,7 @@ const index = async (req, res, next) => {
 };
 
 const getDetailWorkDay = async (req, res, next) => {
+  console.log("getDetailWorkDay");
   let _id = req.params.id;
   try {
     let workDay = await workDayModel.findOne({ _id: id });
@@ -54,17 +55,28 @@ const getDetailWorkDay = async (req, res, next) => {
 const getListWorkDayCompany = async (req, res, next) => {
   let companyId = req.params.id;
 
-  const { page = 0, size = 10000, date } = req.query;
-  let month = moment(date).format("M");
-  let year = moment(date).format("YYYY");
-  console.log("month", month, year);
+  const {
+    page = 0,
+    size = 10000,
+    date,
+    from = "1970-01-01",
+    to = "2050-12-30",
+  } = req.query;
+  // let month = moment(date).format("M");
+  // let year = moment(date).format("YYYY");
+  // console.log("month", moment(date), month, year);
   try {
     let workDays = await workDayModel.aggregate([
       {
         $match: {
           companyId: Types.ObjectId(companyId),
-          month: parseInt(month),
-          year: parseInt(year),
+          // month: parseInt(month),
+          // year: parseInt(year),
+          dayWork: {
+            $gte: from,
+            // $lte: new Date(),
+            $lte: to,
+          },
         },
       },
       { $sort: SORT_TIME_DESC },
@@ -106,7 +118,8 @@ const updateWorkDay = async (req, res, next) => {
   try {
     let updateData = req.body;
 
-    let now = moment();
+    let now = new Date();
+    // let now = moment();
 
     if (updateData.user) {
       // cham cong ho, truyen user vao body
@@ -157,7 +170,7 @@ const updateWorkDay = async (req, res, next) => {
     // console.log(commons.getDiffTime(now));
 
     if (!updateData.dayWork) {
-      query.dayWork = now.format(commons.formatDayWork);
+      query.dayWork = moment(now).format(commons.formatDayWork);
     }
 
     // time checkin auto khoi tao khi tao ban ghi
@@ -191,7 +204,57 @@ const updateWorkDay = async (req, res, next) => {
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, JSON.stringify(error));
+    return handleError(res, error);
+  }
+};
+
+const askComeLeave = async (req, res, next) => {
+  try {
+    const { time, typeAsk, title = "", reason = "", status } = req.body;
+    let dayWork = moment(time).format(commons.formatDayWork);
+
+    let query = {
+      userId: req.user._id,
+      dayWork: dayWork,
+      ...commons.getDetailDate(time),
+    };
+    let updateData = {
+      parentId: req.user.parentId._id,
+      companyId: req.user.companyId._id,
+    };
+
+    // 0: chờ duyệt
+    // 1: đã chấp nhận
+    // -1: từ chối
+
+    if (typeAsk === "comeLate") {
+      updateData = {
+        ...updateData,
+        timeComeLateAsk: time,
+        statusComeLateAsk: status || 0,
+        titleComeLateAsk: title,
+        reasonComeLateAsk: reason,
+      };
+    }
+    if (typeAsk === "leaveEarly") {
+      updateData = {
+        ...updateData,
+        timeLeaveEarlyAsk: time,
+        statusLeaveEarlyAsk: status || 0,
+        titleLeaveEarlyAsk: title,
+        reasonLeaveEarlyAsk: reason,
+      };
+    }
+    let options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    // Since upsert creates a document if not finds a document, you don't need to create another one manually.
+
+    let workDay = await workDayModel
+      .findOneAndUpdate(query, updateData, options)
+      .select("-__v");
+    return res.status(200).json(workDay);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error);
   }
 };
 
@@ -200,4 +263,5 @@ export default {
   getDetailWorkDay,
   getListWorkDayCompany,
   updateWorkDay,
+  askComeLeave,
 };

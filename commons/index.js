@@ -89,6 +89,14 @@ const getPageSize = (page, size) => {
   return [{ $skip: page * size }, { $limit: parseInt(size) }];
 };
 
+const getDetailDate = (date) => {
+  return {
+    day: moment(date).format("D"),
+    month: moment(date).format("M"),
+    year: moment(date).format("YYYY"),
+  };
+};
+
 const commons = {
   handleError,
   getUserIdInToken,
@@ -102,6 +110,7 @@ const commons = {
   lookUp,
   groupBy,
   getPageSize,
+  getDetailDate,
 };
 
 export default commons;

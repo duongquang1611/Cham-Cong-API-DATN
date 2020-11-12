@@ -20,6 +20,8 @@ var workDaySchema = new Schema(
     checkout: { type: Date, default: null }, // put
     timeComeLateAsk: { type: String, default: null }, //put
     timeLeaveEarlyAsk: { type: String, default: null }, //put
+    titleComeLateAsk: { type: String, default: null }, //put
+    titleLeaveEarlyAsk: { type: String, default: null }, //put
     statusComeLateAsk: { type: Number, default: null }, //put
     statusLeaveEarlyAsk: { type: Number, default: null }, //put
     reasonComeLateAsk: { type: String, default: null }, //put

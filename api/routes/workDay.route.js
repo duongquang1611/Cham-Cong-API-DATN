@@ -11,6 +11,9 @@ router.get("/", auth, controller.index);
 // create and update work day
 router.put("/", [auth, checkObjectId], controller.updateWorkDay);
 
+// create and update work day with come leave
+router.put("/ask-come-leave", [auth, checkObjectId], controller.askComeLeave);
+
 // search list checkin company
 router.get(
   "/company/:id",
