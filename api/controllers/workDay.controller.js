@@ -44,6 +44,7 @@ const index = async (req, res, next) => {
       to = "2050-12-30",
       dayWork,
       userId,
+      comeLeave,
       ...otherSearch
     } = req.query;
 
@@ -55,6 +56,16 @@ const index = async (req, res, next) => {
         $gte: from,
         // $lte: new Date(),
         $lte: to,
+      };
+    }
+
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
       };
     }
 
@@ -79,7 +90,7 @@ const index = async (req, res, next) => {
         $sort: SORT_DAY_WORK,
       },
       ...commons.getPageSize(page, size),
-      commons.groupBy(),
+      // commons.groupBy(),
     ]);
 
     return res.status(200).json(workDays || []);
@@ -280,19 +291,31 @@ const askComeLeave = async (req, res, next) => {
     if (typeAsk === "comeLate") {
       updateData = {
         ...updateData,
-        timeComeLateAsk: time,
-        statusComeLateAsk: status || 0,
-        titleComeLateAsk: title,
-        reasonComeLateAsk: reason,
+        comeLateAsk: {
+          time,
+          status: status || 0,
+          title,
+          reason,
+        },
+        // timeComeLateAsk: time,
+        // statusComeLateAsk: status || 0,
+        // titleComeLateAsk: title,
+        // reasonComeLateAsk: reason,
       };
     }
     if (typeAsk === "leaveEarly") {
       updateData = {
         ...updateData,
-        timeLeaveEarlyAsk: time,
-        statusLeaveEarlyAsk: status || 0,
-        titleLeaveEarlyAsk: title,
-        reasonLeaveEarlyAsk: reason,
+        leaveEarlyAsk: {
+          time,
+          status: status || 0,
+          title,
+          reason,
+        },
+        // timeLeaveEarlyAsk: time,
+        // statusLeaveEarlyAsk: status || 0,
+        // titleLeaveEarlyAsk: title,
+        // reasonLeaveEarlyAsk: reason,
       };
     }
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };

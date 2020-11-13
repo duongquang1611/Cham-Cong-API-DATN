@@ -18,18 +18,33 @@ var workDaySchema = new Schema(
     year: { type: Number, default: moment().format("YYYY") },
     checkin: { type: Date, default: null },
     checkout: { type: Date, default: null }, // put
-    timeComeLateAsk: { type: String, default: null }, //put
-    timeLeaveEarlyAsk: { type: String, default: null }, //put
-    titleComeLateAsk: { type: String, default: null }, //put
-    titleLeaveEarlyAsk: { type: String, default: null }, //put
-    statusComeLateAsk: { type: Number, default: null }, //put
-    statusLeaveEarlyAsk: { type: Number, default: null }, //put
-    reasonComeLateAsk: { type: String, default: null }, //put
-    reasonLeaveEarlyAsk: { type: String, default: null }, //put
     minutesComeLate: { type: Number, default: 0 }, //put
     minutesLeaveEarly: { type: Number, default: 0 }, //put
     isDayOff: { type: Boolean, default: false }, //put
     isSuccessDay: { type: Boolean, default: false },
+
+    // timeComeLateAsk: { type: String, default: null }, //put
+    // titleComeLateAsk: { type: String, default: null }, //put
+    // reasonComeLateAsk: { type: String, default: null }, //put
+    // statusComeLateAsk: { type: Number, default: null }, //put
+
+    // timeLeaveEarlyAsk: { type: String, default: null }, //put
+    // titleLeaveEarlyAsk: { type: String, default: null }, //put
+    // statusLeaveEarlyAsk: { type: Number, default: null }, //put
+    // reasonLeaveEarlyAsk: { type: String, default: null }, //put
+
+    comeLateAsk: {
+      time: { type: String, default: null }, //put
+      title: { type: String, default: null }, //put
+      status: { type: Number, default: null }, //put
+      reason: { type: String, default: null }, //put
+    },
+    leaveEarlyAsk: {
+      time: { type: String, default: null }, //put
+      title: { type: String, default: null }, //put
+      reason: { type: String, default: null }, //put
+      status: { type: Number, default: null }, //put
+    },
   },
   {
     timestamps: true,
