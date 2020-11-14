@@ -6,36 +6,26 @@ import workDayModel from "../../models/workDay.model.js";
 import moment from "moment";
 import resources from "../resources/index.js";
 const { Types } = mongoose;
+const TYPE_ASK_COME_LATE = [
+  {
+    id: 0,
+    name: "Đi muộn",
+    code: "comeLateAsk",
+  },
+  {
+    id: 1,
+    name: "Về sớm",
+    code: "leaveEarlyAsk",
+  },
+];
 
-var SORT_TIME_DESC = { updatedAt: -1 };
+var SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
 var SORT_DAY_WORK = { dayWork: -1 };
 
 // search all work day
 const index = async (req, res, next) => {
   try {
     let workDays = [];
-
-    // let {
-    //   // dayWork = moment().format(commons.formatDayWork),
-    //   dayWork,
-    //   userId,
-    // } = req.query;
-
-    // console.log(" req.query", req.query);
-    // if (!userId) {
-    //   // cham cong ho
-    //   // userId = req.user._id;
-    // }
-
-    // workDays = await workDayModel
-    //   .find(
-    //     {
-    //       dayWork: new RegExp(dayWork, "i"),
-    //       userId: userId,
-    //     },
-    //     "-__v"
-    //   )
-    //   .sort(SORT_DAY_WORK);
 
     let {
       page = 0,
@@ -45,6 +35,8 @@ const index = async (req, res, next) => {
       dayWork,
       userId,
       comeLeave,
+      parentId,
+      statusComeLeaveAsk,
       ...otherSearch
     } = req.query;
 
@@ -68,9 +60,21 @@ const index = async (req, res, next) => {
         ],
       };
     }
+    if (statusComeLeaveAsk) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+        ],
+      };
+    }
 
     if (userId) {
       search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
     }
 
     Object.entries(otherSearch).map(([key, value]) => {
@@ -80,20 +84,132 @@ const index = async (req, res, next) => {
       else search[key] = value;
     });
 
-    console.log("search", search);
+    console.log("search", search, commons.getPageSize(page, size));
 
     workDays = await workDayModel.aggregate([
       {
         $match: search,
       },
       {
-        $sort: SORT_DAY_WORK,
+        $sort: SORT_TIME_UPDATED_DESC,
+        // $sort: SORT_DAY_WORK,
       },
       ...commons.getPageSize(page, size),
       // commons.groupBy(),
     ]);
 
     return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error);
+  }
+};
+
+// search list ask come leave
+const getAskComeLeave = async (req, res, next) => {
+  try {
+    let workDays = [];
+
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      dayWork,
+      userId,
+      comeLeave = true, // mac dinh search ask come leave
+      parentId,
+      statusComeLeaveAsk, // mac dinh search all
+      ...otherSearch
+    } = req.query;
+
+    let search = {};
+
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
+    }
+
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
+      };
+    }
+    if (statusComeLeaveAsk) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+        ],
+      };
+    }
+
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search, commons.getPageSize(page, size));
+
+    workDays = await workDayModel.aggregate([
+      {
+        $match: search,
+      },
+      {
+        $sort: SORT_TIME_UPDATED_DESC,
+        // $sort: SORT_DAY_WORK,
+      },
+      ...commons.getPageSize(page, size),
+      commons.lookUp("userId", "users", "_id", "userId"),
+      { $unwind: { path: "$userId" } },
+      {
+        $project: {
+          // select field to show, hide
+          "userId.password": 0,
+          __v: 0,
+        },
+      },
+      // commons.groupBy(),
+    ]);
+    let results = [];
+    workDays.filter((item) => {
+      let newComeLate = { ...item };
+      let newLeaveEarly = { ...item };
+      delete newComeLate[TYPE_ASK_COME_LATE[1].code];
+      newComeLate.type = TYPE_ASK_COME_LATE[0];
+      delete newLeaveEarly[TYPE_ASK_COME_LATE[0].code];
+      newLeaveEarly.type = TYPE_ASK_COME_LATE[1];
+
+      if (item?.comeLateAsk?.time && item?.leaveEarlyAsk?.time) {
+        results.push(newComeLate);
+        results.push(newLeaveEarly);
+      } else if (item?.comeLateAsk?.time) {
+        // remove leaveEarlyAsk
+        results.push(newComeLate);
+      } else {
+        results.push(newLeaveEarly);
+      }
+    });
+    return res.status(200).json(results || []);
+    // return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
     return handleError(res, error);
@@ -268,7 +384,7 @@ const updateWorkDay = async (req, res, next) => {
   }
 };
 
-const askComeLeave = async (req, res, next) => {
+const putAskComeLeave = async (req, res, next) => {
   try {
     const { time, typeAsk, title = "", reason = "", status } = req.body;
     let dayWork = moment(time).format(commons.formatDayWork);
@@ -336,5 +452,6 @@ export default {
   getDetailWorkDay,
   getListWorkDayCompany,
   updateWorkDay,
-  askComeLeave,
+  putAskComeLeave,
+  getAskComeLeave,
 };

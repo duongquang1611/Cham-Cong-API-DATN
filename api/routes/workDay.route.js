@@ -12,7 +12,14 @@ router.get("/", auth, controller.index);
 router.put("/", [auth, checkObjectId], controller.updateWorkDay);
 
 // create and update work day with come leave
-router.put("/ask-come-leave", [auth, checkObjectId], controller.askComeLeave);
+router.put(
+  "/ask-come-leave",
+  [auth, checkObjectId],
+  controller.putAskComeLeave
+);
+
+// search list checkin has as come leave
+router.get("/ask-come-leave", auth, controller.getAskComeLeave);
 
 // search list checkin company
 router.get(

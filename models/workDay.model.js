@@ -23,16 +23,9 @@ var workDaySchema = new Schema(
     isDayOff: { type: Boolean, default: false }, //put
     isSuccessDay: { type: Boolean, default: false },
 
-    // timeComeLateAsk: { type: String, default: null }, //put
-    // titleComeLateAsk: { type: String, default: null }, //put
-    // reasonComeLateAsk: { type: String, default: null }, //put
-    // statusComeLateAsk: { type: Number, default: null }, //put
-
-    // timeLeaveEarlyAsk: { type: String, default: null }, //put
-    // titleLeaveEarlyAsk: { type: String, default: null }, //put
-    // statusLeaveEarlyAsk: { type: Number, default: null }, //put
-    // reasonLeaveEarlyAsk: { type: String, default: null }, //put
-
+    // 0: chờ duyệt
+    // 1: đã chấp nhận
+    // -1: từ chối
     comeLateAsk: {
       time: { type: String, default: null }, //put
       title: { type: String, default: null }, //put
