@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import workDayModel from "../../models/workDay.model.js";
 import moment from "moment";
 import resources from "../resources/index.js";
+import userModel from "../../models/user.model.js";
 const { Types } = mongoose;
 const TYPE_ASK_COME_LATE = [
   {
@@ -120,6 +121,7 @@ const getAskComeLeave = async (req, res, next) => {
       comeLeave = true, // mac dinh search ask come leave
       parentId,
       statusComeLeaveAsk, // mac dinh search all
+      reverseStatusComeLeaveAsk,
       ...otherSearch
     } = req.query;
 
@@ -144,13 +146,24 @@ const getAskComeLeave = async (req, res, next) => {
       };
     }
     if (statusComeLeaveAsk) {
-      search = {
-        ...search,
-        $or: [
-          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
-          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
-        ],
-      };
+      console.log("if", statusComeLeaveAsk);
+      if (reverseStatusComeLeaveAsk) {
+        search = {
+          ...search,
+          $and: [
+            { "comeLateAsk.status": { $ne: parseInt(statusComeLeaveAsk) } },
+            { "leaveEarlyAsk.status": { $ne: parseInt(statusComeLeaveAsk) } },
+          ],
+        };
+      } else {
+        search = {
+          ...search,
+          $or: [
+            { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+            { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+          ],
+        };
+      }
     }
 
     if (userId) {
@@ -199,8 +212,16 @@ const getAskComeLeave = async (req, res, next) => {
       newLeaveEarly.type = TYPE_ASK_COME_LATE[1];
 
       if (item?.comeLateAsk?.time && item?.leaveEarlyAsk?.time) {
-        results.push(newComeLate);
-        results.push(newLeaveEarly);
+        if (!reverseStatusComeLeaveAsk) {
+          if (newComeLate["comeLateAsk"].status == statusComeLeaveAsk) {
+            results.push(newComeLate);
+          }
+          if (newLeaveEarly["leaveEarlyAsk"].status == statusComeLeaveAsk)
+            results.push(newLeaveEarly);
+        } else {
+          results.push(newComeLate);
+          results.push(newLeaveEarly);
+        }
       } else if (item?.comeLateAsk?.time) {
         // remove leaveEarlyAsk
         results.push(newComeLate);
@@ -386,17 +407,29 @@ const updateWorkDay = async (req, res, next) => {
 
 const putAskComeLeave = async (req, res, next) => {
   try {
-    const { time, typeAsk, title = "", reason = "", status } = req.body;
+    const {
+      time,
+      typeAsk,
+      title = "",
+      reason = "",
+      status = 0,
+      userId,
+    } = req.body;
     let dayWork = moment(time).format(commons.formatDayWork);
-
+    let user = req.user;
+    if (userId) {
+      user = await userModel
+        .findOne({ _id: userId })
+        .populate("companyId parentId userId");
+    }
     let query = {
-      userId: Types.ObjectId(req.user._id),
+      userId: Types.ObjectId(userId || user._id),
       dayWork: dayWork,
     };
 
     let updateData = {
-      parentId: req.user.parentId._id,
-      companyId: req.user.companyId._id,
+      parentId: user.parentId._id,
+      companyId: user.companyId._id,
       ...commons.getDetailDate(time),
     };
 
@@ -404,34 +437,26 @@ const putAskComeLeave = async (req, res, next) => {
     // 1: đã chấp nhận
     // -1: từ chối
 
-    if (typeAsk === "comeLate") {
+    if (typeAsk === "comeLateAsk") {
       updateData = {
         ...updateData,
         comeLateAsk: {
           time,
-          status: status || 0,
           title,
+          status: status || 0,
           reason,
         },
-        // timeComeLateAsk: time,
-        // statusComeLateAsk: status || 0,
-        // titleComeLateAsk: title,
-        // reasonComeLateAsk: reason,
       };
     }
-    if (typeAsk === "leaveEarly") {
+    if (typeAsk === "leaveEarlyAsk") {
       updateData = {
         ...updateData,
         leaveEarlyAsk: {
           time,
-          status: status || 0,
           title,
+          status: status || 0,
           reason,
         },
-        // timeLeaveEarlyAsk: time,
-        // statusLeaveEarlyAsk: status || 0,
-        // titleLeaveEarlyAsk: title,
-        // reasonLeaveEarlyAsk: reason,
       };
     }
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
