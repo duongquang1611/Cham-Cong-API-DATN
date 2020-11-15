@@ -212,15 +212,22 @@ const getAskComeLeave = async (req, res, next) => {
       newLeaveEarly.type = TYPE_ASK_COME_LATE[1];
 
       if (item?.comeLateAsk?.time && item?.leaveEarlyAsk?.time) {
-        if (!reverseStatusComeLeaveAsk) {
-          if (newComeLate["comeLateAsk"].status == statusComeLeaveAsk) {
-            results.push(newComeLate);
-          }
-          if (newLeaveEarly["leaveEarlyAsk"].status == statusComeLeaveAsk)
-            results.push(newLeaveEarly);
-        } else {
+        // neu k truyen status come leave
+        if (!statusComeLeaveAsk) {
           results.push(newComeLate);
           results.push(newLeaveEarly);
+        } else {
+          // neu truyen status nhung k truyen reverse
+          if (!reverseStatusComeLeaveAsk) {
+            if (newComeLate["comeLateAsk"].status == statusComeLeaveAsk) {
+              results.push(newComeLate);
+            }
+            if (newLeaveEarly["leaveEarlyAsk"].status == statusComeLeaveAsk)
+              results.push(newLeaveEarly);
+          } else {
+            results.push(newComeLate);
+            results.push(newLeaveEarly);
+          }
         }
       } else if (item?.comeLateAsk?.time) {
         // remove leaveEarlyAsk
