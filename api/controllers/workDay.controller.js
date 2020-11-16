@@ -564,7 +564,15 @@ const getAskDayOff = async (req, res, next) => {
 
 const putAskDayOff = async (req, res, next) => {
   try {
-    let { userId, fromDate, toDate, title, reason, status } = req.body;
+    let {
+      userId,
+      fromDate,
+      toDate,
+      title,
+      reason,
+      status,
+      typeAsk: type,
+    } = req.body;
     let user = req.user;
     if (userId) {
       user = await userModel
@@ -586,6 +594,7 @@ const putAskDayOff = async (req, res, next) => {
       title,
       reason,
       status: parseInt(status),
+      type,
     };
 
     let dayOff = await askDayOffModel

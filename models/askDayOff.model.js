@@ -15,6 +15,7 @@ var askDayOffSchema = new Schema(
     companyId: { type: String, default: null, ref: "Company" },
     fromDate: { type: String, default: null },
     toDate: { type: String, default: null },
+    type: { type: String, default: null },
     title: { type: String, default: null },
     reason: { type: String, default: null },
     status: { type: Number, default: null },
