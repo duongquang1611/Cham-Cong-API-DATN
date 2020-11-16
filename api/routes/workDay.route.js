@@ -21,6 +21,12 @@ router.put(
 // search list checkin has as come leave
 router.get("/ask-come-leave", auth, controller.getAskComeLeave);
 
+// search list day off
+router.get("/day-off", auth, controller.getAskDayOff);
+
+// create or update day - off
+router.put("/day-off", auth, controller.putAskDayOff);
+
 // search list checkin company
 router.get(
   "/company/:id",

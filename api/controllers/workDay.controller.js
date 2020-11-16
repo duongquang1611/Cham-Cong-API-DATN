@@ -6,6 +6,7 @@ import workDayModel from "../../models/workDay.model.js";
 import moment from "moment";
 import resources from "../resources/index.js";
 import userModel from "../../models/user.model.js";
+import askDayOffModel from "../../models/askDayOff.model.js";
 const { Types } = mongoose;
 const TYPE_ASK_COME_LATE = [
   {
@@ -472,6 +473,7 @@ const putAskComeLeave = async (req, res, next) => {
     let workDay = await workDayModel
       .findOneAndUpdate(query, updateData, options)
       .select("-__v");
+    console.log("workDay", workDay);
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
@@ -479,6 +481,122 @@ const putAskComeLeave = async (req, res, next) => {
   }
 };
 
+// day off
+const getAskDayOff = async (req, res, next) => {
+  try {
+    let dayOffs = [];
+
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      // dayWork,
+      userId, // search theo userId
+      parentId, // search theo parentId
+      status, // mac dinh search all
+      reverseStatus,
+      ...otherSearch
+    } = req.query;
+
+    let search = {
+      $and: [{ fromDate: { $gte: from } }, { toDate: { $lte: to } }],
+    };
+
+    if (status) {
+      if (reverseStatus) {
+        search = {
+          ...search,
+          status: { $ne: parseInt(status) },
+        };
+      } else {
+        search = {
+          ...search,
+          status: parseInt(status),
+        };
+      }
+    }
+
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search);
+
+    dayOffs = await askDayOffModel.aggregate([
+      {
+        $match: search,
+      },
+      {
+        $sort: SORT_TIME_UPDATED_DESC,
+        // $sort: SORT_DAY_WORK,
+      },
+      ...commons.getPageSize(page, size),
+      commons.lookUp("userId", "users", "_id", "userId"),
+      { $unwind: { path: "$userId" } },
+      {
+        $project: {
+          // select field to show, hide
+          "userId.password": 0,
+          __v: 0,
+        },
+      },
+      // commons.groupBy(),
+    ]);
+
+    return res.status(200).json(dayOffs || []);
+    // return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error);
+  }
+};
+
+const putAskDayOff = async (req, res, next) => {
+  try {
+    let { userId, fromDate, toDate, title, reason, status } = req.body;
+    let user = req.user;
+    if (userId) {
+      user = await userModel
+        .findOne({ _id: userId })
+        .populate("companyId parentId userId");
+    }
+
+    let options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+    let query = {
+      userId: Types.ObjectId(userId || user._id),
+      fromDate: moment(fromDate).format(commons.formatDayWork),
+      toDate: moment(toDate).format(commons.formatDayWork),
+    };
+
+    let updateData = {
+      parentId: user.parentId._id,
+      companyId: user.companyId._id,
+      title,
+      reason,
+      status: parseInt(status),
+    };
+
+    let dayOff = await askDayOffModel
+      .findOneAndUpdate(query, updateData, options)
+      .select("-__v");
+    return res.status(200).json(dayOff);
+  } catch (error) {
+    console.log("error", error);
+    handleError(res, error);
+  }
+};
 export default {
   index,
   getDetailWorkDay,
@@ -486,4 +604,6 @@ export default {
   updateWorkDay,
   putAskComeLeave,
   getAskComeLeave,
+  getAskDayOff,
+  putAskDayOff,
 };

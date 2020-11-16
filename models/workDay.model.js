@@ -20,7 +20,7 @@ var workDaySchema = new Schema(
     checkout: { type: Date, default: null }, // put
     minutesComeLate: { type: Number, default: 0 }, //put
     minutesLeaveEarly: { type: Number, default: 0 }, //put
-    isDayOff: { type: Boolean, default: false }, //put
+    // isDayOff: { type: Boolean, default: false }, //put
     isSuccessDay: { type: Boolean, default: false },
 
     // 0: chờ duyệt

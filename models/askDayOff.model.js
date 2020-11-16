@@ -12,8 +12,9 @@ var askDayOffSchema = new Schema(
       default: null,
     },
     parentId: { type: String, default: null, ref: "User" },
-    fromDate: { type: Date, default: null },
-    toDate: { type: Date, default: null },
+    companyId: { type: String, default: null, ref: "Company" },
+    fromDate: { type: String, default: null },
+    toDate: { type: String, default: null },
     title: { type: String, default: null },
     reason: { type: String, default: null },
     status: { type: Number, default: null },
@@ -26,4 +27,4 @@ var askDayOffSchema = new Schema(
   }
 );
 
-export default model("AskDayOff", askDayOffSchema, ask_day_off);
+export default model("AskDayOff", askDayOffSchema, "day_off");
