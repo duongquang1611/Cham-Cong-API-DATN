@@ -554,6 +554,7 @@ const getAskDayOff = async (req, res, next) => {
       // commons.groupBy(),
     ]);
 
+    console.log("dayOffs", dayOffs);
     return res.status(200).json(dayOffs || []);
     // return res.status(200).json(workDays || []);
   } catch (error) {
