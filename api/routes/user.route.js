@@ -4,8 +4,10 @@ import userModel from "../../models/user.model.js";
 import controller from "../controllers/user.controller.js";
 import middleware from "../../middleware/index.js";
 var router = express.Router();
-const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+import { multerSingle } from "../handlers/multer.upload.js";
+
 const { auth, checkObjectId, isAdminSystem } = middleware;
+const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 // all user
 router.get("/", auth, controller.index);
 
@@ -16,6 +18,12 @@ router.get("/:id", [auth, checkObjectId], controller.detailUser);
 router.delete("/:id", [auth, checkObjectId], controller.deleteUser);
 
 // update user
-router.put("/:id", [auth, checkObjectId], controller.updateUser);
+// router.put("/:id", [auth, checkObjectId], controller.updateUser);
+
+router.put(
+  "/:id",
+  [auth, checkObjectId, multerSingle.single("avatar")],
+  controller.updateUser
+);
 
 export default router;

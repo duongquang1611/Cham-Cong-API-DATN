@@ -4,6 +4,23 @@ import jwt from "jsonwebtoken";
 import config from "../../config/index.js";
 import mongoose from "mongoose";
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+import cloudinary from "cloudinary";
+import { multerSingle } from "../handlers/multer.upload.js";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
+
+const resizeImage = (id, h, w) => {
+  return cloudinary.url(id, {
+    height: h,
+    width: w,
+    crop: "scale",
+    format: "jpg",
+  });
+};
 
 // search all user
 const index = async (req, res, next) => {
@@ -104,10 +121,22 @@ const deleteUser = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-  let _id = req.params.id;
-  let updateData = req.body;
   try {
-    // cach 1
+    let _id = req.params.id;
+    let resize = null;
+    if (req.file && req.file.path) {
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      resize = {
+        thumb200: resizeImage(result.public_id, 200, 200),
+        thumb300: resizeImage(result.public_id, 300, 300),
+        thumb500: resizeImage(result.public_id, 500, 500),
+        original: result.secure_url,
+      };
+    }
+    let updateData = { ...req.body };
+    if (resize) {
+      updateData.avatar = resize;
+    }
     let newUser = await userModel
       .findByIdAndUpdate(_id, updateData, { new: true })
       .populate({
@@ -131,10 +160,10 @@ const updateUser = async (req, res, next) => {
     }
     return res.status(200).json(newUser);
   } catch (error) {
-    return handleError(res, error);
+    console.log("error", error);
+    return handleError(res, error.message);
   }
 };
-
 export default {
   index,
   detailUser,
