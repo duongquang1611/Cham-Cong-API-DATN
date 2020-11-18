@@ -2,6 +2,8 @@ import handleError from "../../commons/handleError.js";
 import userModel from "../../models/user.model.js";
 import jwt from "jsonwebtoken";
 import config from "../../config/index.js";
+import mongoose from "mongoose";
+const { Types } = mongoose;
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 
 const postSignIn = async (req, res, next) => {
@@ -48,7 +50,7 @@ const postSignIn = async (req, res, next) => {
 };
 
 const postSignUp = async (req, res, next) => {
-  const { username, password, name, phoneNumber, roleId } = req.body;
+  const { id, username, password, name, phoneNumber, roleId } = req.body;
   listKey.map((key) => {
     if (!req.body[key]) {
       return handleError(res, `${key} không được để trống.`);
@@ -65,6 +67,12 @@ const postSignUp = async (req, res, next) => {
     let newUser = new userModel({
       ...req.body,
     });
+    if (id) {
+      newUser = new userModel({
+        ...req.body,
+        _id: Types.ObjectId(id),
+      });
+    }
     const passwordHash = await newUser.encryptPassword(password);
     newUser.password = passwordHash;
 
