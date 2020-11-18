@@ -124,19 +124,19 @@ const updateUser = async (req, res, next) => {
   try {
     let _id = req.params.id;
     let resize = null;
-    // if (req.file && req.file.path) {
-    //   const result = await cloudinary.v2.uploader.upload(req.file.path);
-    //   resize = {
-    //     thumb200: resizeImage(result.public_id, 200, 200),
-    //     thumb300: resizeImage(result.public_id, 300, 300),
-    //     thumb500: resizeImage(result.public_id, 500, 500),
-    //     original: result.secure_url,
-    //   };
-    // }
+    if (req.file && req.file.path) {
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      resize = {
+        thumb200: resizeImage(result.public_id, 200, 200),
+        thumb300: resizeImage(result.public_id, 300, 300),
+        thumb500: resizeImage(result.public_id, 500, 500),
+        original: result.secure_url,
+      };
+    }
     let updateData = { ...req.body };
-    // if (resize) {
-    //   updateData.avatar = resize;
-    // }
+    if (resize) {
+      updateData.avatar = resize;
+    }
     let newUser = await userModel
       .findByIdAndUpdate(_id, updateData, { new: true })
       .populate({

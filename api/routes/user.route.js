@@ -22,7 +22,7 @@ router.delete("/:id", [auth, checkObjectId], controller.deleteUser);
 
 router.put(
   "/:id",
-  [auth, checkObjectId, multerSingle.single("avatar")],
+  [auth, checkObjectId, multerSingle.single("file")],
   controller.updateUser
 );
 
