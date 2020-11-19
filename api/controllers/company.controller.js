@@ -140,6 +140,14 @@ const configCompany = async (req, res, next) => {
     return handleError(res, error);
   }
 };
+const getConfigCompanyDefault = async (req, res, next) => {
+  try {
+    let config = new companyConfigModel();
+    return res.status(200).json(config);
+  } catch (error) {
+    return next(error);
+  }
+};
 
 const getUserCompany = async (req, res, next) => {
   let _id = req.params.id;
@@ -163,4 +171,5 @@ export default {
   deleteCompany,
   configCompany,
   getUserCompany,
+  getConfigCompanyDefault,
 };

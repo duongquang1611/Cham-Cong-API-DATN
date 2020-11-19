@@ -39,6 +39,7 @@ const index = async (req, res, next) => {
       comeLeave,
       parentId,
       statusComeLeaveAsk,
+      me,
       ...otherSearch
     } = req.query;
 
@@ -72,6 +73,11 @@ const index = async (req, res, next) => {
       };
     }
 
+    if (me) {
+      // chinh chu
+      console.log("req.user._id", req.user._id);
+      search.userId = Types.ObjectId(req.user._id);
+    }
     if (userId) {
       search.userId = Types.ObjectId(userId);
     }

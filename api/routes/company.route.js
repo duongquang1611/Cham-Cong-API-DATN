@@ -18,6 +18,9 @@ router.post("/", [auth, isAdminSystem], controller.postIndex);
 // setup info to checkin
 router.put("/config", [auth, checkObjectId], controller.configCompany);
 
+// get config default
+router.get("/config/default", controller.getConfigCompanyDefault);
+
 // detail company
 router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
