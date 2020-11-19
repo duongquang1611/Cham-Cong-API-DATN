@@ -47,6 +47,10 @@ const index = async (req, res, next) => {
           path: "companyId",
           select: "-__v",
         })
+        .populate({
+          path: "parentId",
+          select: "-__v -password",
+        })
         .sort({ updatedAt: -1 }) // new to old
         .select("-password");
     } else {
