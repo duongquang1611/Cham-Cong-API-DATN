@@ -77,7 +77,7 @@ const index = async (req, res, next) => {
     console.log("users", users.length);
     return res.status(200).json(users);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -105,7 +105,7 @@ const detailUser = async (req, res, next) => {
     }
     return res.status(200).json(user);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -120,7 +120,7 @@ const deleteUser = async (req, res, next) => {
       .status(200)
       .json({ msg: `Xóa Id: ${req.params.id} thành công.` });
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 

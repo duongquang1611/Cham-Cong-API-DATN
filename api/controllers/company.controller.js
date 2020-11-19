@@ -34,7 +34,7 @@ const index = async (req, res, next) => {
     return res.status(200).json(companies);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -57,7 +57,7 @@ const postIndex = async (req, res, next) => {
     if (!savedCompany) return handleError(res, "Lỗi khi lưu thông tin công ty");
     return res.status(201).json(savedCompany);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -81,7 +81,7 @@ const updateCompany = async (req, res, next) => {
 
     return res.status(200).json(newCompany);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -99,7 +99,7 @@ const detailCompany = async (req, res, next) => {
     return res.status(200).json(company);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -114,7 +114,7 @@ const deleteCompany = async (req, res, next) => {
       .status(200)
       .json({ msg: `Xóa Id: ${req.params.id} thành công.` });
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -137,7 +137,7 @@ const configCompany = async (req, res, next) => {
       return handleError(res, checkConfig.errors);
     }
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 const getConfigCompanyDefault = async (req, res, next) => {
@@ -145,7 +145,7 @@ const getConfigCompanyDefault = async (req, res, next) => {
     let config = new companyConfigModel();
     return res.status(200).json(config);
   } catch (error) {
-    return next(error);
+    return handleError(res, error.message);
   }
 };
 
@@ -159,7 +159,7 @@ const getUserCompany = async (req, res, next) => {
   try {
     userController.index(req, res, next);
   } catch (error) {
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 

@@ -109,7 +109,7 @@ const index = async (req, res, next) => {
     return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -247,7 +247,7 @@ const getAskComeLeave = async (req, res, next) => {
     // return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -321,7 +321,7 @@ const getListWorkDayCompany = async (req, res, next) => {
     return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -373,7 +373,7 @@ const updateWorkDay = async (req, res, next) => {
     // set parentId, company
     updateData = {
       ...updateData,
-      parentId: user.parentId._id,
+      parentId: user?.parentId?._id || null,
       companyId: user.companyId._id,
     };
 
@@ -415,7 +415,7 @@ const updateWorkDay = async (req, res, next) => {
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -483,7 +483,7 @@ const putAskComeLeave = async (req, res, next) => {
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -565,7 +565,7 @@ const getAskDayOff = async (req, res, next) => {
     // return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
-    return handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 
@@ -610,7 +610,7 @@ const putAskDayOff = async (req, res, next) => {
     return res.status(200).json(dayOff);
   } catch (error) {
     console.log("error", error);
-    handleError(res, error);
+    return handleError(res, error.message);
   }
 };
 export default {
