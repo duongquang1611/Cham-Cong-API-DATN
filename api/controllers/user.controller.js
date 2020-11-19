@@ -147,6 +147,10 @@ const updateUser = async (req, res, next) => {
         path: "roleId",
         select: "-__v",
       })
+      .populate({
+        path: "parentId",
+        select: "-__v -password",
+      })
       .select("-__v -password")
       .exec();
 
