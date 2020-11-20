@@ -442,7 +442,7 @@ const putAskComeLeave = async (req, res, next) => {
     };
 
     let updateData = {
-      parentId: user.parentId._id,
+      parentId: user?.parentId?._id || null,
       companyId: user.companyId._id,
       ...commons.getDetailDate(time),
     };
@@ -596,7 +596,7 @@ const putAskDayOff = async (req, res, next) => {
     };
 
     let updateData = {
-      parentId: user.parentId._id,
+      parentId: user?.parentId?._id || null,
       companyId: user.companyId._id,
       title,
       reason,
