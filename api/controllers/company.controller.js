@@ -121,6 +121,7 @@ const deleteCompany = async (req, res, next) => {
 const configCompany = async (req, res, next) => {
   try {
     let updateData = req.body;
+    console.log("updateData", updateData);
     let query = { companyId: updateData.companyId };
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
     // Since upsert creates a document if not finds a document, you don't need to create another one manually.
@@ -132,11 +133,18 @@ const configCompany = async (req, res, next) => {
       let config = await companyConfigModel
         .findOneAndUpdate(query, updateData, options)
         .select("-__v");
-      return res.status(200).json(config);
+      let company = await companyModel
+        .findOne({ _id: req.body.companyId }, " -__v")
+        .populate({ path: "createdBy", select: "-__v -password" })
+        .populate({ path: "updatedBy", select: "-__v -password" });
+      company = { ...company._doc, config: { ...config._doc } };
+      return res.status(200).json(company);
+      // return res.status(200).json(config);
     } else {
       return handleError(res, checkConfig.errors);
     }
   } catch (error) {
+    console.log("error.message", error.message);
     return handleError(res, error.message);
   }
 };
