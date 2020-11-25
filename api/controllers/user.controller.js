@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 import cloudinary from "cloudinary";
 import { multerSingle } from "../handlers/multer.upload.js";
+import commons from "../../commons/index.js";
+const { Types } = mongoose;
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -22,58 +24,129 @@ const resizeImage = (id, h, w) => {
   });
 };
 
+var SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
+// var SORT_DAY_WORK = { dayWork: -1 };
+
 // search all user
 const index = async (req, res, next) => {
   try {
-    const { name = "", companyId, username = "" } = req.query;
-    console.log(" req.query", req.query);
     let users = [];
+    // const { name = "", companyId, username = "", text } = req.query;
+    // console.log(" req.query", req.query);
 
+    // if (companyId) {
+    //   users = await userModel
+    //     .find(
+    //       {
+    //         companyId: companyId,
+    //         name: { $regex: name, $options: "$i" },
+    //         username: { $regex: username, $options: "$i" },
+    //       },
+    //       "-__v"
+    //     )
+    //     .populate({
+    //       path: "roleId",
+    //       select: "-__v",
+    //     })
+    //     .populate({
+    //       path: "companyId",
+    //       select: "-__v",
+    //     })
+    //     .populate({
+    //       path: "parentId",
+    //       select: "-__v -password",
+    //     })
+    //     .sort({ updatedAt: -1 }) // new to old
+    //     .select("-password");
+    // } else {
+    //   users = await userModel
+    //     .find(
+    //       {
+    //         name: { $regex: name, $options: "$i" },
+    //         username: { $regex: username, $options: "$i" },
+    //       },
+    //       "-__v"
+    //     )
+    //     .populate({
+    //       path: "roleId",
+    //       select: "-__v",
+    //     })
+    //     .populate({
+    //       path: "companyId",
+    //       select: "-__v",
+    //     })
+    //     .sort({ updatedAt: -1 }) // new to old
+    //     .select("-password");
+    // }
+
+    // console.log("users", users.length);
+    let {
+      page = 0,
+      size = 10000,
+      userId,
+      companyId,
+      parentId,
+      text,
+      // name = "",
+      // username = "",
+      ...otherSearch
+    } = req.query;
+
+    let search = {};
+
+    if (text) {
+      search = {
+        ...search,
+        $text: { $search: text },
+      };
+    }
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
     if (companyId) {
-      users = await userModel
-        .find(
-          {
-            companyId: companyId,
-            name: { $regex: name, $options: "$i" },
-            username: { $regex: username, $options: "$i" },
-          },
-          "-__v"
-        )
-        .populate({
-          path: "roleId",
-          select: "-__v",
-        })
-        .populate({
-          path: "companyId",
-          select: "-__v",
-        })
-        .populate({
-          path: "parentId",
-          select: "-__v -password",
-        })
-        .sort({ updatedAt: -1 }) // new to old
-        .select("-password");
-    } else {
-      users = await userModel
-        .find(
-          {
-            name: { $regex: name, $options: "$i" },
-            username: { $regex: username, $options: "$i" },
-          },
-          "-__v"
-        )
-        .populate({
-          path: "roleId",
-          select: "-__v",
-        })
-        .populate({
-          path: "companyId",
-          select: "-__v",
-        })
-        .sort({ updatedAt: -1 }) // new to old
-        .select("-password");
+      search.companyId = Types.ObjectId(companyId);
     }
 
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = { $regex: new RegExp(value), $options: "$i" };
+    });
+
+    console.log("user.controller.js ~ index ~ search", search);
+
+    users = await userModel.aggregate([
+      {
+        $match: search,
+      },
+      {
+        $sort: SORT_TIME_UPDATED_DESC,
+      },
+      ...commons.getPageSize(page, size),
+      commons.lookUp("roleId", "roles", "_id", "roleId"),
+      { $unwind: { path: "$roleId", preserveNullAndEmptyArrays: true } },
+
+      commons.lookUp("companyId", "companies", "_id", "companyId"),
+      { $unwind: { path: "$companyId", preserveNullAndEmptyArrays: true } },
+
+      commons.lookUp("parentId", "users", "_id", "parentId"),
+      { $unwind: { path: "$parentId", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          // select field to show, hide
+          "parentId.password": 0,
+          "roleId.__v": 0,
+          "parentId.__v": 0,
+          "companyId.__v": 0,
+          __v: 0,
+        },
+      },
+      // commons.groupBy(),
+    ]);
     console.log("users", users.length);
     return res.status(200).json(users);
   } catch (error) {

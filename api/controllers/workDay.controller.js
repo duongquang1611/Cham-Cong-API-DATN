@@ -40,11 +40,17 @@ const index = async (req, res, next) => {
       parentId,
       statusComeLeaveAsk,
       me,
+      text,
       ...otherSearch
     } = req.query;
 
     let search = {};
-
+    if (text) {
+      search = {
+        ...search,
+        $text: { $search: text },
+      };
+    }
     if (dayWork) search.dayWork = dayWork;
     else {
       search.dayWork = {
@@ -184,7 +190,7 @@ const getAskComeLeave = async (req, res, next) => {
       if (value == "true") search[key] = true;
       else if (value == "false") search[key] = false;
       else if (commons.isNumeric(value)) search[key] = parseFloat(value);
-      else search[key] = value;
+      else search[key] = { $regex: new RegExp(value), $options: "$i" };
     });
 
     console.log("search", search, commons.getPageSize(page, size));
@@ -199,11 +205,12 @@ const getAskComeLeave = async (req, res, next) => {
       },
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
-      { $unwind: { path: "$userId" } },
+      { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
+          "userId.__v": 0,
           __v: 0,
         },
       },
@@ -243,6 +250,7 @@ const getAskComeLeave = async (req, res, next) => {
         results.push(newLeaveEarly);
       }
     });
+    console.log("results", results.length);
     return res.status(200).json(results || []);
     // return res.status(200).json(workDays || []);
   } catch (error) {
@@ -298,14 +306,16 @@ const getListWorkDayCompany = async (req, res, next) => {
       //    foreignField: <field from the documents of the "from" collection>,
       //    as: <output array field>
       commons.lookUp("userId", "users", "_id", "userId"),
-      { $unwind: { path: "$userId" } }, // bo [] => {} userId
+      { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } }, // bo [] => {} userId
       commons.lookUp("parentId", "users", "_id", "parentId"),
-      { $unwind: "$parentId" },
+      { $unwind: "$parentId", preserveNullAndEmptyArrays: true },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
           "parentId.password": 0,
+          "userId.__v": 0,
+          "parentId.__v": 0,
           __v: 0,
         },
       },
@@ -549,11 +559,12 @@ const getAskDayOff = async (req, res, next) => {
       },
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
-      { $unwind: { path: "$userId" } },
+      { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
+          "userId.__v": 0,
           __v: 0,
         },
       },
