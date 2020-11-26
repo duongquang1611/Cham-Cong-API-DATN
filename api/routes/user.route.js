@@ -11,6 +11,9 @@ const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
 // all user
 router.get("/", auth, controller.index);
 
+// search users public
+router.get("/public", controller.index);
+
 // detail user
 router.get("/:id", [auth, checkObjectId], controller.detailUser);
 
