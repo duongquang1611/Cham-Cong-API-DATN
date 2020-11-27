@@ -41,8 +41,17 @@ const index = async (req, res, next) => {
       statusComeLeaveAsk,
       me,
       text,
+      sortType,
+      sortValue,
       ...otherSearch
     } = req.query;
+
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
 
     let search = {};
     if (text) {
@@ -105,8 +114,7 @@ const index = async (req, res, next) => {
         $match: search,
       },
       {
-        $sort: SORT_TIME_UPDATED_DESC,
-        // $sort: SORT_DAY_WORK,
+        $sort: sort,
       },
       ...commons.getPageSize(page, size),
       // commons.groupBy(),
@@ -208,7 +216,6 @@ const getAskComeLeave = async (req, res, next) => {
       },
       {
         $sort: sort,
-        // $sort: SORT_DAY_WORK,
       },
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
@@ -287,10 +294,18 @@ const getListWorkDayCompany = async (req, res, next) => {
     date,
     from = "1970-01-01",
     to = "2050-12-30",
+    sortType,
+    sortValue,
   } = req.query;
   // let month = moment(date).format("M");
   // let year = moment(date).format("YYYY");
   // console.log("month", moment(date), month, year);
+  let sort = {};
+  if (sortType) {
+    sort[sortType] = parseInt(sortValue);
+  } else {
+    sort = SORT_DAY_WORK;
+  }
   try {
     let workDays = await workDayModel.aggregate([
       {
@@ -305,7 +320,7 @@ const getListWorkDayCompany = async (req, res, next) => {
           },
         },
       },
-      { $sort: SORT_DAY_WORK },
+      { $sort: sort },
       ...commons.getPageSize(page, size),
 
       //    from: <collection to join>,
@@ -519,9 +534,17 @@ const getAskDayOff = async (req, res, next) => {
       parentId, // search theo parentId
       status, // mac dinh search all
       reverseStatus,
+      sortType,
+      sortValue,
       ...otherSearch
     } = req.query;
 
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
     let search = {
       $and: [{ fromDate: { $gte: from } }, { toDate: { $lte: to } }],
     };
@@ -561,8 +584,7 @@ const getAskDayOff = async (req, res, next) => {
         $match: search,
       },
       {
-        $sort: SORT_TIME_UPDATED_DESC,
-        // $sort: SORT_DAY_WORK,
+        $sort: sort,
       },
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
