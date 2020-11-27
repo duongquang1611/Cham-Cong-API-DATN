@@ -135,11 +135,18 @@ const getAskComeLeave = async (req, res, next) => {
       parentId,
       statusComeLeaveAsk, // mac dinh search all
       reverseStatusComeLeaveAsk,
+      sortType,
+      sortValue,
       ...otherSearch
     } = req.query;
 
     let search = {};
-
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
     if (dayWork) search.dayWork = dayWork;
     else {
       search.dayWork = {
@@ -200,7 +207,7 @@ const getAskComeLeave = async (req, res, next) => {
         $match: search,
       },
       {
-        $sort: SORT_TIME_UPDATED_DESC,
+        $sort: sort,
         // $sort: SORT_DAY_WORK,
       },
       ...commons.getPageSize(page, size),
