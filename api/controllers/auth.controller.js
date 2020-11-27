@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import config from "../../config/index.js";
 import mongoose from "mongoose";
 const { Types } = mongoose;
-const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+const listKey = ["username", "password", "name", "roleId"];
 
 const postSignIn = async (req, res, next) => {
   const { username, password } = req.body;

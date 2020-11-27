@@ -3,7 +3,7 @@ import userModel from "../../models/user.model.js";
 import jwt from "jsonwebtoken";
 import config from "../../config/index.js";
 import mongoose from "mongoose";
-const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+const listKey = ["username", "password", "name", "roleId"];
 import cloudinary from "cloudinary";
 import { multerSingle } from "../handlers/multer.upload.js";
 import commons from "../../commons/index.js";
@@ -142,6 +142,7 @@ const index = async (req, res, next) => {
           "roleId.__v": 0,
           "parentId.__v": 0,
           "companyId.__v": 0,
+          password: 0,
           __v: 0,
         },
       },

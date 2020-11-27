@@ -7,7 +7,7 @@ var router = express.Router();
 import { multerSingle } from "../handlers/multer.upload.js";
 
 const { auth, checkObjectId, isAdminSystem } = middleware;
-const listKey = ["username", "password", "name", "phoneNumber", "roleId"];
+const listKey = ["username", "password", "name", "roleId"];
 // all user
 router.get("/", auth, controller.index);
 
