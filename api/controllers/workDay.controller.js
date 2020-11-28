@@ -21,8 +21,8 @@ const TYPE_ASK_COME_LATE = [
   },
 ];
 
-var SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
-var SORT_DAY_WORK = { dayWork: -1 };
+let SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
+let SORT_DAY_WORK = { dayWork: -1 };
 
 // search all work day
 const index = async (req, res, next) => {

@@ -6,31 +6,86 @@ import companyConfigModel from "../../models/companyConfig.model.js";
 import userController from "./user.controller.js";
 const { Types } = mongoose;
 
+let SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
+let SORT_DAY_WORK = { dayWork: -1 };
+
 const index = async (req, res, next) => {
   try {
-    let companies = {};
-    companies = await companyModel
-      .find({}, "-__v")
-      .populate("createdBy", "-__v -password")
-      .populate("updatedBy", "-__v -password")
-      .sort({ updatedAt: -1 });
+    let companies = [];
+    let {
+      page = 0,
+      size = 10000,
+      createdBy,
+      updatedBy,
+      text,
+      sortType,
+      sortValue,
+      ...otherSearch
+    } = req.query;
 
-    // companies = await companyModel.aggregate([
-    //   {
-    //     // {
-    //     //   from: <collection to join>,
-    //     //   localField: <field from the input documents>,
-    //     //   foreignField: <field from the documents of the "from" collection>,
-    //     //   as: <output array field>
-    //     // }
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "createdBy",
-    //       foreignField: "_id",
-    //       as: "cre",
-    //     },
-    //   },
-    // ]);
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+    let search = {};
+
+    if (text) {
+      search = {
+        ...search,
+        $text: { $search: text },
+      };
+    }
+    if (createdBy) {
+      search.createdBy = Types.ObjectId(createdBy);
+    }
+    if (updatedBy) {
+      search.updatedBy = Types.ObjectId(updatedBy);
+    }
+
+    // companies = await companyModel
+    //   .find({}, "-__v")
+    //   .populate("createdBy", "-__v -password")
+    //   .populate("updatedBy", "-__v -password")
+    //   .sort({ updatedAt: -1 });
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = { $regex: new RegExp(value), $options: "$i" };
+    });
+
+    console.log("company.controller.js ~ index ~ search", search);
+
+    companies = await companyModel.aggregate([
+      {
+        $match: search,
+      },
+      {
+        $sort: sort,
+      },
+      ...commons.getPageSize(page, size),
+      commons.lookUp("createdBy", "users", "_id", "createdBy"),
+      { $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true } },
+
+      commons.lookUp("updatedBy", "users", "_id", "updatedBy"),
+      { $unwind: { path: "$updatedBy", preserveNullAndEmptyArrays: true } },
+
+      {
+        $project: {
+          // select field to show, hide
+          "createdBy.password": 0,
+          "updatedBy.password": 0,
+          "createdBy.__v": 0,
+          "updatedBy.__v": 0,
+          __v: 0,
+        },
+      },
+      // commons.groupBy(),
+    ]);
+    console.log("companies", companies.length);
     return res.status(200).json(companies);
   } catch (error) {
     console.log("error", error);

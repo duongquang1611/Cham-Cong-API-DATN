@@ -9,6 +9,9 @@ import { multerSingle } from "../handlers/multer.upload.js";
 import commons from "../../commons/index.js";
 const { Types } = mongoose;
 
+let SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
+let SORT_DAY_WORK = { dayWork: -1 };
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
@@ -23,9 +26,6 @@ const resizeImage = (id, h, w) => {
     format: "jpg",
   });
 };
-
-var SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
-// var SORT_DAY_WORK = { dayWork: -1 };
 
 // search all user
 const index = async (req, res, next) => {
@@ -89,9 +89,17 @@ const index = async (req, res, next) => {
       text,
       // name = "",
       // username = "",
+      sortType,
+      sortValue,
       ...otherSearch
     } = req.query;
 
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
     let search = {};
 
     if (text) {
@@ -124,7 +132,7 @@ const index = async (req, res, next) => {
         $match: search,
       },
       {
-        $sort: SORT_TIME_UPDATED_DESC,
+        $sort: sort,
       },
       ...commons.getPageSize(page, size),
       commons.lookUp("roleId", "roles", "_id", "roleId"),
