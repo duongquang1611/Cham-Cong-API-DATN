@@ -30,11 +30,10 @@ const index = async (req, res, next) => {
       sort = SORT_TIME_UPDATED_DESC;
     }
     let search = {};
-
-    if (text) {
+    if (text && text.trim().length !== 0) {
       search = {
         ...search,
-        $text: { $search: text },
+        $text: { $search: text.trim() },
       };
     }
     if (createdBy) {

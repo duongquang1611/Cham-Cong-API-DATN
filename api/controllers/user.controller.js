@@ -102,10 +102,10 @@ const index = async (req, res, next) => {
     }
     let search = {};
 
-    if (text) {
+    if (text && text.trim().length !== 0) {
       search = {
         ...search,
-        $text: { $search: text },
+        $text: { $search: text.trim() },
       };
     }
     if (userId) {
