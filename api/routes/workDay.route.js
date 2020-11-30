@@ -27,13 +27,6 @@ router.get("/day-off", auth, controller.getAskDayOff);
 // create or update day - off
 router.put("/day-off", auth, controller.putAskDayOff);
 
-// search list checkin company
-router.get(
-  "/company/:id",
-  [auth, checkObjectId],
-  controller.getListWorkDayCompany
-);
-
 // detail 1 checkin
 router.get("/:id", [auth, checkObjectId], controller.getDetailWorkDay);
 

@@ -7,6 +7,7 @@ import config from "../config/index.js";
 const checkObjectId = (req, res, next) => {
   let _id = req.params.id;
   if (!mongoose.isValidObjectId(_id)) {
+    console.log("middleware");
     return handleError(res, `Id: ${_id} không tồn tại.`);
   }
   next();

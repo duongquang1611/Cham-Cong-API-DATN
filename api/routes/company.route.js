@@ -21,11 +21,35 @@ router.put("/config", [auth, checkObjectId], controller.configCompany);
 // get config default
 router.get("/config/default", controller.getConfigCompanyDefault);
 
-// detail company
-router.get("/:id", [auth, checkObjectId], controller.detailCompany);
+// search list checkin company
+router.get("/work-day", auth, controller.getListWorkDayCompany);
+
+// search list ask come leave in company
+router.get("/ask-come-leave", auth, controller.getListAskComeLeaveInCompany);
+
+router.get("/ask-day-off", auth, controller.getListAskDayOffInCompany);
+
+router.get("/users", [auth], controller.getUserCompany);
 
 // user in company
 router.get("/:id/users", [auth, checkObjectId], controller.getUserCompany);
+
+// search list checkin company
+router.get(
+  "/:id/work-day",
+  [auth, checkObjectId],
+  controller.getListWorkDayCompany
+);
+
+// search list ask come leave in company
+router.get(
+  "/:id/ask-come-leave",
+  [auth, checkObjectId],
+  controller.getListAskComeLeaveInCompany
+);
+
+// detail company
+router.get("/:id", [auth, checkObjectId], controller.detailCompany);
 
 // delete company
 router.delete(

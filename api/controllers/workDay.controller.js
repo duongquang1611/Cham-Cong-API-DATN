@@ -149,6 +149,7 @@ const getAskComeLeave = async (req, res, next) => {
       userId,
       comeLeave = true, // mac dinh search ask come leave
       parentId,
+      companyId,
       statusComeLeaveAsk, // mac dinh search all
       reverseStatusComeLeaveAsk,
       sortType,
@@ -208,6 +209,9 @@ const getAskComeLeave = async (req, res, next) => {
     if (parentId) {
       search.parentId = Types.ObjectId(parentId);
     }
+    if (companyId) {
+      search.companyId = Types.ObjectId(companyId);
+    }
 
     Object.entries(otherSearch).map(([key, value]) => {
       if (value == "true") search[key] = true;
@@ -239,6 +243,7 @@ const getAskComeLeave = async (req, res, next) => {
       // commons.groupBy(),
     ]);
     let results = [];
+
     workDays.filter((item) => {
       let newComeLate = { ...item };
       let newLeaveEarly = { ...item };
@@ -290,119 +295,6 @@ const getDetailWorkDay = async (req, res, next) => {
     return res.status(200).json(workDay || {});
   } catch (error) {
     return handleError(res, JSON.stringify(error));
-  }
-};
-
-const getListWorkDayCompany = async (req, res, next) => {
-  let companyId = req.params.id;
-
-  try {
-    let workDays = [];
-
-    let {
-      page = 0,
-      size = 10000,
-      from = "1970-01-01",
-      to = "2050-12-30",
-      dayWork,
-      userId,
-      comeLeave,
-      parentId,
-      statusComeLeaveAsk,
-      me,
-      text,
-      sortType,
-      sortValue,
-      ...otherSearch
-    } = req.query;
-
-    let sort = {};
-    if (sortType) {
-      sort[sortType] = parseInt(sortValue);
-    } else {
-      sort = SORT_TIME_UPDATED_DESC;
-    }
-
-    let search = {
-      companyId: Types.ObjectId(companyId),
-    };
-    if (text && text.trim().length !== 0) {
-      search = {
-        ...search,
-        $text: { $search: text.trim() },
-      };
-    }
-    if (dayWork) search.dayWork = dayWork;
-    else {
-      search.dayWork = {
-        $gte: from,
-        // $lte: new Date(),
-        $lte: to,
-      };
-    }
-
-    if (comeLeave) {
-      search = {
-        ...search,
-        $or: [
-          { "comeLateAsk.time": { $ne: null } },
-          { "leaveEarlyAsk.time": { $ne: null } },
-        ],
-      };
-    }
-    if (statusComeLeaveAsk) {
-      search = {
-        ...search,
-        $or: [
-          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
-          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
-        ],
-      };
-    }
-
-    if (me) {
-      // chinh chu
-      console.log("req.user._id", req.user._id);
-      search.userId = Types.ObjectId(req.user._id);
-    }
-    if (userId) {
-      search.userId = Types.ObjectId(userId);
-    }
-    if (parentId) {
-      search.parentId = Types.ObjectId(parentId);
-    }
-
-    Object.entries(otherSearch).map(([key, value]) => {
-      if (value == "true") search[key] = true;
-      else if (value == "false") search[key] = false;
-      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
-      else search[key] = value;
-    });
-
-    console.log("search", search, commons.getPageSize(page, size));
-
-    workDays = await workDayModel.aggregate([
-      {
-        $match: search,
-      },
-
-      ...commons.getPageSize(page, size),
-      {
-        $group: {
-          _id: "$userId",
-          count: { $sum: 1 },
-          results: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $sort: sort,
-      },
-    ]);
-    console.log("workDays company", workDays.length);
-    return res.status(200).json(workDays || []);
-  } catch (error) {
-    console.log("error", error);
-    return handleError(res, error.message);
   }
 };
 
@@ -705,7 +597,6 @@ const putAskDayOff = async (req, res, next) => {
 export default {
   index,
   getDetailWorkDay,
-  getListWorkDayCompany,
   updateWorkDay,
   putAskComeLeave,
   getAskComeLeave,

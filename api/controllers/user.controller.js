@@ -164,6 +164,7 @@ const index = async (req, res, next) => {
 };
 
 const detailUser = async (req, res, next) => {
+  console.log("detailUser");
   try {
     let user = await userModel
       .findOne({ _id: req.params.id }, "-password -__v")
@@ -192,6 +193,8 @@ const detailUser = async (req, res, next) => {
 };
 
 const deleteUser = async (req, res, next) => {
+  console.log("deleteUser");
+
   let _id = req.params.id;
   try {
     let user = await userModel.findOneAndRemove({ _id });

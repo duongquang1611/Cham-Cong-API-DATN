@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
+import askDayOffModel from "../../models/askDayOff.model.js";
 import companyModel from "../../models/company.model.js";
 import companyConfigModel from "../../models/companyConfig.model.js";
+import workDayModel from "../../models/workDay.model.js";
 import userController from "./user.controller.js";
 const { Types } = mongoose;
 
@@ -140,6 +142,8 @@ const updateCompany = async (req, res, next) => {
 };
 
 const detailCompany = async (req, res, next) => {
+  console.log("detailCompany");
+
   try {
     let company = await companyModel
       .findOne({ _id: req.params.id }, " -__v")
@@ -158,6 +162,8 @@ const detailCompany = async (req, res, next) => {
 };
 
 const deleteCompany = async (req, res, next) => {
+  console.log("deleteCompany");
+
   let _id = req.params.id;
   try {
     let company = await companyModel.findOneAndRemove({ _id });
@@ -195,9 +201,11 @@ const configCompany = async (req, res, next) => {
       return res.status(200).json(company);
       // return res.status(200).json(config);
     } else {
+      console.log("configCompany");
       return handleError(res, checkConfig.errors);
     }
   } catch (error) {
+    console.log("configCompany");
     console.log("error.message", error.message);
     return handleError(res, error.message);
   }
@@ -207,20 +215,409 @@ const getConfigCompanyDefault = async (req, res, next) => {
     let config = new companyConfigModel();
     return res.status(200).json(config);
   } catch (error) {
+    console.log("getConfigCompanyDefault");
     return handleError(res, error.message);
   }
 };
 
 const getUserCompany = async (req, res, next) => {
   let _id = req.params.id;
-  // Object.entries(req.query).map(([key, value]) => {
-  //   req.query[key] = `/${req.query[key].toLowerCase()}/i`;
-  // });
-  // console.log("req.query", req.query);
-  req.query = { ...req.query, companyId: _id };
+  if (_id) {
+    req.query = { ...req.query, companyId: _id };
+  } else {
+    let user = { ...req.user };
+    if (user?.companyId?._id) {
+      req.query = { ...req.query, companyId: user?.companyId?._id };
+    } else {
+      return handleError(res, "Không thể tìm thấy công ty.");
+    }
+  }
   try {
     userController.index(req, res, next);
   } catch (error) {
+    console.log("getUserCompany");
+
+    return handleError(res, error.message);
+  }
+};
+
+const getListWorkDayCompany = async (req, res, next) => {
+  let companyId = req.params.id;
+
+  try {
+    let workDays = [];
+    let user = { ...req.user };
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      dayWork,
+      userId,
+      comeLeave,
+      parentId,
+      statusComeLeaveAsk,
+      me,
+      text,
+      sortType,
+      sortValue,
+      ...otherSearch
+    } = req.query;
+
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+
+    let search = {};
+    if (user?.companyId?._id) {
+      search.companyId = Types.ObjectId(user?.companyId?._id);
+    } else {
+      console.log("getListWorkDayCompany");
+
+      return handleError(res, "Không thể tìm thấy công ty.");
+    }
+    if (text && text.trim().length !== 0) {
+      search = {
+        ...search,
+        $text: { $search: text.trim() },
+      };
+    }
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
+    }
+
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
+      };
+    }
+    if (statusComeLeaveAsk) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+        ],
+      };
+    }
+
+    if (me) {
+      // chinh chu
+      console.log("req.user._id", req.user._id);
+      search.userId = Types.ObjectId(req.user._id);
+    }
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search, commons.getPageSize(page, size));
+
+    workDays = await workDayModel.aggregate([
+      {
+        $match: search,
+      },
+
+      ...commons.getPageSize(page, size),
+      // commons.lookUp("userId", "users", "_id", "userId"),
+      // { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+          results: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: sort,
+      },
+    ]);
+    console.log("workDays company", workDays.length);
+    return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error.message);
+  }
+};
+
+const getListAskComeLeaveInCompany = async (req, res, next) => {
+  try {
+    let workDays = [];
+    let companyId = req.params.id;
+    let user = { ...req.user };
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      dayWork,
+      userId,
+      comeLeave = true, // mac dinh search ask come leave
+      parentId,
+      statusComeLeaveAsk, // mac dinh search all
+      reverseStatusComeLeaveAsk,
+      sortType,
+      sortValue,
+      ...otherSearch
+    } = req.query;
+
+    let search = {};
+    if (user?.companyId?._id) {
+      search.companyId = Types.ObjectId(user?.companyId?._id);
+    } else {
+      return handleError(res, "Không thể tìm thấy công ty.");
+    }
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
+    }
+
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
+      };
+    }
+    if (statusComeLeaveAsk) {
+      console.log("if", statusComeLeaveAsk);
+      if (reverseStatusComeLeaveAsk) {
+        search = {
+          ...search,
+          $and: [
+            { "comeLateAsk.status": { $ne: parseInt(statusComeLeaveAsk) } },
+            { "leaveEarlyAsk.status": { $ne: parseInt(statusComeLeaveAsk) } },
+          ],
+        };
+      } else {
+        search = {
+          ...search,
+          $or: [
+            { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+            { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+          ],
+        };
+      }
+    }
+
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = { $regex: new RegExp(value), $options: "$i" };
+    });
+
+    console.log("search", search, commons.getPageSize(page, size));
+
+    workDays = await workDayModel.aggregate([
+      {
+        $match: search,
+      },
+      ...commons.getPageSize(page, size),
+      // commons.lookUp("userId", "users", "_id", "userId"),
+      // { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          // select field to show, hide
+          "userId.password": 0,
+          "userId.__v": 0,
+          __v: 0,
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+          results: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: sort,
+      },
+    ]);
+    // let results = [];
+
+    // workDays.filter((item) => {
+    //   let newComeLate = { ...item };
+    //   let newLeaveEarly = { ...item };
+    //   delete newComeLate[TYPE_ASK_COME_LATE[1].code];
+    //   newComeLate.type = TYPE_ASK_COME_LATE[0];
+    //   delete newLeaveEarly[TYPE_ASK_COME_LATE[0].code];
+    //   newLeaveEarly.type = TYPE_ASK_COME_LATE[1];
+
+    //   if (item?.comeLateAsk?.time && item?.leaveEarlyAsk?.time) {
+    //     // neu k truyen status come leave
+    //     if (!statusComeLeaveAsk) {
+    //       results.push(newComeLate);
+    //       results.push(newLeaveEarly);
+    //     } else {
+    //       // neu truyen status nhung k truyen reverse
+    //       if (!reverseStatusComeLeaveAsk) {
+    //         if (newComeLate["comeLateAsk"].status == statusComeLeaveAsk) {
+    //           results.push(newComeLate);
+    //         }
+    //         if (newLeaveEarly["leaveEarlyAsk"].status == statusComeLeaveAsk)
+    //           results.push(newLeaveEarly);
+    //       } else {
+    //         results.push(newComeLate);
+    //         results.push(newLeaveEarly);
+    //       }
+    //     }
+    //   } else if (item?.comeLateAsk?.time) {
+    //     // remove leaveEarlyAsk
+    //     results.push(newComeLate);
+    //   } else {
+    //     results.push(newLeaveEarly);
+    //   }
+    // });
+    // console.log("results", results.length);
+    // return res.status(200).json(results || []);
+
+    console.log("come leave", workDays.length);
+
+    return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error.message);
+  }
+};
+
+const getListAskDayOffInCompany = async (req, res, next) => {
+  try {
+    let dayOffs = [];
+    let user = { ...req.user };
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      // dayWork,
+      userId, // search theo userId
+      parentId, // search theo parentId
+      status, // mac dinh search all
+      reverseStatus,
+      sortType,
+      sortValue,
+      ...otherSearch
+    } = req.query;
+
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+    let search = {
+      $and: [{ fromDate: { $gte: from } }, { toDate: { $lte: to } }],
+    };
+
+    if (user?.companyId?._id) {
+      search.companyId = Types.ObjectId(user?.companyId?._id);
+    } else {
+      return handleError(res, "Không thể tìm thấy công ty.");
+    }
+    if (status) {
+      if (reverseStatus) {
+        search = {
+          ...search,
+          status: { $ne: parseInt(status) },
+        };
+      } else {
+        search = {
+          ...search,
+          status: parseInt(status),
+        };
+      }
+    }
+
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search);
+
+    dayOffs = await askDayOffModel.aggregate([
+      {
+        $match: search,
+      },
+      ...commons.getPageSize(page, size),
+      // commons.lookUp("userId", "users", "_id", "userId"),
+      // { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          // select field to show, hide
+          "userId.password": 0,
+          "userId.__v": 0,
+          __v: 0,
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+          results: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: sort,
+      },
+    ]);
+
+    console.log("dayOffs", dayOffs.length);
+    return res.status(200).json(dayOffs || []);
+    // return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
     return handleError(res, error.message);
   }
 };
@@ -234,4 +631,7 @@ export default {
   configCompany,
   getUserCompany,
   getConfigCompanyDefault,
+  getListWorkDayCompany,
+  getListAskComeLeaveInCompany,
+  getListAskDayOffInCompany,
 };

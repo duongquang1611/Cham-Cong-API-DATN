@@ -7,6 +7,7 @@ const { Types } = mongoose;
 const listKey = ["username", "password", "name", "roleId"];
 
 const postSignIn = async (req, res, next) => {
+  console.log("postSignIn");
   const { username, password } = req.body;
 
   try {
@@ -50,6 +51,7 @@ const postSignIn = async (req, res, next) => {
 };
 
 const postSignUp = async (req, res, next) => {
+  console.log("postSignUp");
   const { id, username, password, name, phoneNumber, roleId } = req.body;
   listKey.map((key) => {
     if (!req.body[key]) {
