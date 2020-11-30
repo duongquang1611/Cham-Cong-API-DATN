@@ -117,8 +117,16 @@ const index = async (req, res, next) => {
         $sort: sort,
       },
       ...commons.getPageSize(page, size),
-      // commons.groupBy(),
+      // commons.groupBy() ,
+      // {
+      //   $group: {
+      //     _id: "$userId",
+      //     count: { $sum: 1 },
+      //     results: { $push: "$$ROOT" },
+      //   },
+      // },
     ]);
+    console.log("workDays ", workDays.length);
 
     return res.status(200).json(workDays || []);
   } catch (error) {
@@ -288,68 +296,109 @@ const getDetailWorkDay = async (req, res, next) => {
 const getListWorkDayCompany = async (req, res, next) => {
   let companyId = req.params.id;
 
-  const {
-    page = 0,
-    size = 10000,
-    date,
-    from = "1970-01-01",
-    to = "2050-12-30",
-    sortType,
-    sortValue,
-  } = req.query;
-  // let month = moment(date).format("M");
-  // let year = moment(date).format("YYYY");
-  // console.log("month", moment(date), month, year);
-  let sort = {};
-  if (sortType) {
-    sort[sortType] = parseInt(sortValue);
-  } else {
-    sort = SORT_DAY_WORK;
-  }
   try {
-    let workDays = await workDayModel.aggregate([
-      {
-        $match: {
-          companyId: Types.ObjectId(companyId),
-          // month: parseInt(month),
-          // year: parseInt(year),
-          dayWork: {
-            $gte: from,
-            // $lte: new Date(),
-            $lte: to,
-          },
-        },
-      },
-      { $sort: sort },
-      ...commons.getPageSize(page, size),
+    let workDays = [];
 
-      //    from: <collection to join>,
-      //    localField: <field from the input documents>,
-      //    foreignField: <field from the documents of the "from" collection>,
-      //    as: <output array field>
-      commons.lookUp("userId", "users", "_id", "userId"),
-      { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } }, // bo [] => {} userId
-      commons.lookUp("parentId", "users", "_id", "parentId"),
-      { $unwind: "$parentId", preserveNullAndEmptyArrays: true },
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      dayWork,
+      userId,
+      comeLeave,
+      parentId,
+      statusComeLeaveAsk,
+      me,
+      text,
+      sortType,
+      sortValue,
+      ...otherSearch
+    } = req.query;
+
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+
+    let search = {
+      companyId: Types.ObjectId(companyId),
+    };
+    if (text && text.trim().length !== 0) {
+      search = {
+        ...search,
+        $text: { $search: text.trim() },
+      };
+    }
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
+    }
+
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
+      };
+    }
+    if (statusComeLeaveAsk) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+        ],
+      };
+    }
+
+    if (me) {
+      // chinh chu
+      console.log("req.user._id", req.user._id);
+      search.userId = Types.ObjectId(req.user._id);
+    }
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search, commons.getPageSize(page, size));
+
+    workDays = await workDayModel.aggregate([
       {
-        $project: {
-          // select field to show, hide
-          "userId.password": 0,
-          "parentId.password": 0,
-          "userId.__v": 0,
-          "parentId.__v": 0,
-          __v: 0,
+        $match: search,
+      },
+
+      ...commons.getPageSize(page, size),
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+          results: { $push: "$$ROOT" },
         },
       },
-      // {
-      //   $group: {
-      //     _id: companyId,
-      //     count: { $sum: 1 },
-      //     results: { $push: "$$ROOT" },
-      //   },
-      // },
-      commons.groupBy(companyId),
+      {
+        $sort: sort,
+      },
     ]);
+    console.log("workDays company", workDays.length);
     return res.status(200).json(workDays || []);
   } catch (error) {
     console.log("error", error);
