@@ -29,51 +29,53 @@ const resizeImage = (id, h, w) => {
   });
 };
 
-const updateUser = async (req, res, next) => {
+const addFace = async (req, res, next) => {
+  let _id = req.params.id;
   try {
-    let _id = req.params.id;
-    let resize = null;
+    let dataUrl = null;
+
     if (req.file && req.file.path) {
       const result = await cloudinary.v2.uploader.upload(req.file.path);
-      resize = {
-        thumb200: resizeImage(result.public_id, 200, 200),
-        thumb300: resizeImage(result.public_id, 300, 300),
-        thumb500: resizeImage(result.public_id, 500, 500),
-        original: result.secure_url,
-      };
+      console.log("addFace ~ result", result);
+      dataUrl = result.secure_url;
     }
-    let updateData = { ...req.body };
-    if (resize) {
-      updateData.avatar = resize;
-    }
-    let newUser = await userModel
-      .findByIdAndUpdate(_id, updateData, { new: true })
-      .populate({
-        path: "companyId",
-        select: "-__v",
-      })
-      .populate({
-        path: "roleId",
-        select: "-__v",
-      })
-      .populate({
-        path: "parentId",
-        select: "-__v -password",
-      })
-      .select("-__v -password")
-      .exec();
+    if (dataUrl) {
+      let user = await userModel.findById(_id);
 
-    // cach 2
-    // let newUser = await userModel
-    //   .findOneAndUpdate({ _id }, updateData, { new: true })
-    //   .select("-__v -password")
-    //   .exec();
-    if (!newUser) {
-      return handleError(res, "Cập nhật thông tin không thành công.");
+      if (!user.personId) {
+        // neu add face ma chua co personId thi create person
+        let createPerson = await resources.createPerson(
+          user.companyId,
+          user._id,
+          user.name
+        );
+        if (createPerson.status === 200) {
+          console.log("create person success");
+          let updateData = {
+            personId: createPerson?.data?.personId,
+          };
+
+          user = await userModel.findByIdAndUpdate(_id, updateData, {
+            new: true,
+          });
+        }
+      }
+      let addFace = await resources.addFace(
+        user.companyId,
+        user.personId,
+        dataUrl
+      );
+      if (addFace.status === 200) {
+        console.log("Face added successfully.");
+        await resources.trainGroup(user.companyId);
+        return res
+          .status(200)
+          .json({ msg: `Thêm dữ liệu khuôn mặt ${user.name} thành công.` });
+      }
+    } else {
+      return handleError(res);
     }
-    return res.status(200).json(newUser);
   } catch (error) {
-    console.log("error", error);
     return handleError(res, error.message);
   }
 };
@@ -110,10 +112,13 @@ const createPerson = async (req, res, next) => {
 };
 
 const createPersonGroup = async (req, res, next) => {
-  console.log("createPersonGroup");
   try {
     let id = req.params.id;
     let company = await companyModel.findById(id);
+    if (company.havePersonGroup) {
+      console.log("Đã tạo Person Group rồi.");
+      return res.status(200).json(company);
+    }
     let createPersonGroup = await resources.createPersonGroup(
       company._id,
       company.name
@@ -134,8 +139,28 @@ const createPersonGroup = async (req, res, next) => {
     return handleError(res, error.message);
   }
 };
-
+const trainGroup = async (req, res, next) => {
+  try {
+    let companyId = req.params.id;
+    await resources.trainGroup(companyId);
+    return res.status(200).json();
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
+const listPersons = async (req, res, next) => {
+  try {
+    let companyId = req.params.id;
+    let listPersons = await resources.listPersons(companyId);
+    return res.status(200).json(listPersons.data);
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
 export default {
   createPerson,
+  addFace,
   createPersonGroup,
+  trainGroup,
+  listPersons,
 };

@@ -11,22 +11,29 @@ const listKey = ["username", "password", "name", "roleId"];
 
 // create person for user
 router.post(
-  "/create-person/:id",
+  "/:id/create-person",
   [auth, checkObjectId],
   controller.createPerson
 );
 
+// add face
+router.post(
+  "/:id/add-face",
+  [auth, checkObjectId, multerSingle.single("file")],
+  controller.addFace
+);
+
 // create person group for company
 router.put(
-  "/create-person-group/:id",
+  "/:id/create-person-group",
   [auth, checkObjectId],
   controller.createPersonGroup
 );
 
-// router.put(
-//   "/:id",
-//   [auth, checkObjectId, multerSingle.single("file")],
-//   controller.updateUser
-// );
+// train person group for company
+router.post("/:id/train", [auth, checkObjectId], controller.trainGroup);
+
+// list person group in company
+router.get("/:id/persons", [auth, checkObjectId], controller.listPersons);
 
 export default router;
