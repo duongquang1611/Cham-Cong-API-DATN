@@ -47,12 +47,6 @@ router.get(
   [auth, checkObjectId],
   controller.getListAskComeLeaveInCompany
 );
-// search list ask come leave in company
-router.post(
-  "/:id/create-person-group",
-  [auth, checkObjectId],
-  controller.createPersonGroup
-);
 
 // detail company
 router.get("/:id", [auth, checkObjectId], controller.detailCompany);

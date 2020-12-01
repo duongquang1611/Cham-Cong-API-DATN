@@ -1,9 +1,9 @@
 import companyResources from "./company.resources.js";
-import userResources from "./user.resources.js";
+import faceResources from "./face.resources.js";
 
 const resources = {
   ...companyResources,
-  ...userResources,
+  ...faceResources,
 };
 
 export default resources;

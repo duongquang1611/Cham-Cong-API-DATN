@@ -658,31 +658,6 @@ const getListAskDayOffInCompany = async (req, res, next) => {
   }
 };
 
-const createPersonGroup = async (req, res, next) => {
-  console.log("createPersonGroup");
-  try {
-    let id = req.params.id;
-    let company = await companyModel.findById(id);
-    let createPersonGroup = await resources.createPersonGroup(
-      company._id,
-      company.name
-    );
-    if (createPersonGroup.status === 200) {
-      let updateData = {
-        havePersonGroup: true,
-      };
-      let newCompany = await companyModel.findByIdAndUpdate(id, updateData, {
-        new: true,
-      });
-      return res.status(200).json(newCompany);
-    } else {
-      return handleError(res);
-    }
-  } catch (error) {
-    console.log("createPersonGroup ~ error", error);
-    return handleError(res);
-  }
-};
 export default {
   index,
   postIndex,
@@ -695,5 +670,4 @@ export default {
   getListWorkDayCompany,
   getListAskComeLeaveInCompany,
   getListAskDayOffInCompany,
-  createPersonGroup,
 };

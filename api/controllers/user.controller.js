@@ -7,6 +7,7 @@ const listKey = ["username", "password", "name", "roleId"];
 import cloudinary from "cloudinary";
 import { multerSingle } from "../handlers/multer.upload.js";
 import commons from "../../commons/index.js";
+import resources from "../resources/index.js";
 const { Types } = mongoose;
 
 let SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
@@ -257,9 +258,42 @@ const updateUser = async (req, res, next) => {
     return handleError(res, error.message);
   }
 };
+
+const createPerson = async (req, res, next) => {
+  let _id = req.params.id;
+  try {
+    let user = await userModel.findById(_id);
+    if (user.personId) {
+      console.log("Đã có personId rồi", user.personId);
+      return res.status(200).json(user);
+    }
+    let createPerson = await resources.createPerson(
+      user.companyId,
+      user._id,
+      user.name
+    );
+    if (createPerson.status === 200) {
+      console.log("create person success");
+      let updateData = {
+        personId: createPerson?.data?.personId,
+      };
+
+      let newUser = await userModel.findByIdAndUpdate(_id, updateData, {
+        new: true,
+      });
+      return res.status(200).json(newUser);
+    } else {
+      return handleError(res, error.message);
+    }
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
+
 export default {
   index,
   detailUser,
   deleteUser,
   updateUser,
+  createPerson,
 };

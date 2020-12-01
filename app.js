@@ -19,6 +19,7 @@ import apiRoleRouters from "./api/routes/role.route.js";
 import apiCompanyRouters from "./api/routes/company.route.js";
 import apiWorkDayRouters from "./api/routes/workDay.route.js";
 import apiUploads from "./api/routes/upload.route.js";
+import apiFacesRouters from "./api/routes/face.route.js";
 
 dotenv.config();
 var app = express();
@@ -69,6 +70,7 @@ app.use("/api/roles", apiRoleRouters);
 app.use("/api/companies", apiCompanyRouters);
 app.use("/api/work-day", apiWorkDayRouters);
 app.use("/api/upload", apiUploads);
+app.use("/api/face", apiFacesRouters);
 
 if (process.env.NODE_ENV === "production") {
   // Set static folder
