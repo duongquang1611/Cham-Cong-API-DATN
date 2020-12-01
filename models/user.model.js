@@ -36,6 +36,7 @@ var userSchema = new Schema(
       thumb500: { type: String, default: null },
       original: { type: String, default: null },
     },
+    personId: { type: String, default: null },
   },
   { timestamps: true }
 );

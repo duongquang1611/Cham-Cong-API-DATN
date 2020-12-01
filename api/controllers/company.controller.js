@@ -1,3 +1,4 @@
+import Axios from "axios";
 import mongoose from "mongoose";
 import handleError from "../../commons/handleError.js";
 import commons from "../../commons/index.js";
@@ -6,6 +7,10 @@ import companyModel from "../../models/company.model.js";
 import companyConfigModel from "../../models/companyConfig.model.js";
 import workDayModel from "../../models/workDay.model.js";
 import userController from "./user.controller.js";
+import resources from "../resources/index.js";
+
+import dotenv from "dotenv";
+dotenv.config();
 const { Types } = mongoose;
 
 let SORT_TIME_UPDATED_DESC = { updatedAt: -1 };
@@ -104,15 +109,46 @@ const postIndex = async (req, res, next) => {
     }
   });
   try {
-    let newCompany = new companyModel({
-      ...req.body,
-      createdBy: tokenData._id,
-      updatedBy: tokenData._id,
-    });
-    let savedCompany = await newCompany.save();
-    if (!savedCompany) return handleError(res, "Lỗi khi lưu thông tin công ty");
-    return res.status(201).json(savedCompany);
+    let _id = Types.ObjectId();
+
+    let createPersonGroup = await resources.createPersonGroup(_id, name);
+    if (createPersonGroup.status === 200) {
+      console.log("Create Person Group Success");
+      let newCompany = new companyModel({
+        ...req.body,
+        _id: _id,
+        createdBy: tokenData._id,
+        updatedBy: tokenData._id,
+        havePersonGroup: true,
+      });
+      let savedCompany = await newCompany.save();
+
+      if (!savedCompany)
+        return handleError(res, "Lỗi khi lưu thông tin công ty");
+      return res.status(201).json(savedCompany);
+    } else {
+      return handleError(res);
+    }
+
+    // let createPersonGroup = await Axios({
+    //   method: "put",
+    //   url: `/persongroups/test006`,
+
+    //   baseURL: commons.FACE_RECO_URL,
+    //   data: {
+    //     name: "test001",
+    //     userData: "Group Person Face Make By Duong Quang",
+    //     recognitionModel: "recognition_03",
+    //   },
+    //   headers: {
+    //     "Ocp-Apim-Subscription-Key": process.env.FACE_KEY_01,
+    //     "Content-Type": "application/json",
+    //   },
+    // });
+    // console.log("createPersonGroup", createPersonGroup.status);
+    // return res.status(201).json(createPersonGroup.data);
   } catch (error) {
+    console.log(error.message);
     return handleError(res, error.message);
   }
 };
@@ -622,6 +658,31 @@ const getListAskDayOffInCompany = async (req, res, next) => {
   }
 };
 
+const createPersonGroup = async (req, res, next) => {
+  console.log("createPersonGroup");
+  try {
+    let id = req.params.id;
+    let company = await companyModel.findById(id);
+    let createPersonGroup = await resources.createPersonGroup(
+      company._id,
+      company.name
+    );
+    if (createPersonGroup.status === 200) {
+      let updateData = {
+        havePersonGroup: true,
+      };
+      let newCompany = await companyModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+      return res.status(200).json(newCompany);
+    } else {
+      return handleError(res);
+    }
+  } catch (error) {
+    console.log("createPersonGroup ~ error", error);
+    return handleError(res);
+  }
+};
 export default {
   index,
   postIndex,
@@ -634,4 +695,5 @@ export default {
   getListWorkDayCompany,
   getListAskComeLeaveInCompany,
   getListAskDayOffInCompany,
+  createPersonGroup,
 };

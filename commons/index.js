@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import config from "../config/index.js";
 import mongoose from "mongoose";
 import moment from "moment";
+const FACE_RECO_URL = "https://cham-cong.cognitiveservices.azure.com/face/v1.0";
 const formatDayWork = "YYYY-MM-DD";
 
 const getUserIdInToken = (req) => {
@@ -119,6 +120,7 @@ const commons = {
   getPageSize,
   getDetailDate,
   isNumeric,
+  FACE_RECO_URL,
 };
 
 export default commons;

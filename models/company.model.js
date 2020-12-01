@@ -27,6 +27,7 @@ var companySchema = new Schema(
     representativeName: { type: String, default: null },
     representativeEmail: { type: String, default: null },
     representativePhoneNumber: { type: String, default: null },
+    havePersonGroup: { type: Boolean, default: false },
   },
   {
     timestamps: true, // createdAt, updatedAt
