@@ -157,10 +157,82 @@ const listPersons = async (req, res, next) => {
     return handleError(res, error.message);
   }
 };
+const detect = async (req, res, next) => {
+  try {
+    let dataUrl = null;
+
+    if (req.file && req.file.path) {
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      console.log("addFace ~ result", result);
+      dataUrl = result.secure_url;
+    }
+    if (dataUrl) {
+      let detectData = await resources.detect(dataUrl);
+      if (detectData.status === 200) {
+        console.log("detect success");
+        return res.status(200).json(detectData.data);
+      } else {
+        return handleError(res);
+      }
+    } else {
+      return handleError(res);
+    }
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
+const identify = async (req, res, next) => {
+  try {
+    let companyId = req.params.id;
+    let { faceId } = req.body;
+    let identifyData = await resources.identify(companyId, faceId);
+    return res.status(200).json(identifyData.data);
+  } catch (error) {
+    console.log("error control");
+    return handleError(res, error.message);
+  }
+};
+const detectAndIdentify = async (req, res, next) => {
+  console.log("detectAndIdentify");
+  try {
+    let companyId = req.params.id;
+    let dataUrl = null;
+
+    if (req.file && req.file.path) {
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      console.log("addFace ~ result", result);
+      dataUrl = result.secure_url;
+    }
+    if (dataUrl) {
+      let detectData = await resources.detect(dataUrl);
+      console.log(
+        "🚀 ~ file: face.controller.js ~ line 208 ~ detectAndIdentify ~ detectData",
+        detectData
+      );
+      if (detectData.status === 200) {
+        console.log("detect success");
+        let identifyData = await resources.identify(
+          companyId,
+          detectData?.data[0].faceId
+        );
+        return res.status(200).json(identifyData.data);
+      } else {
+        return handleError(res);
+      }
+    } else {
+      return handleError(res);
+    }
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
 export default {
   createPerson,
   addFace,
   createPersonGroup,
   trainGroup,
   listPersons,
+  detect,
+  identify,
+  detectAndIdentify,
 };

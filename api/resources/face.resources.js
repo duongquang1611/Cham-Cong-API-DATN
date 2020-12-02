@@ -87,11 +87,56 @@ const listPersons = async (personGroupId) => {
   });
   return res;
 };
+const detect = async (dataUrl) => {
+  console.log("detect");
+  let res = await Axios({
+    method: "post",
+    url: `/detect`,
+    baseURL: commons.FACE_RECO_URL,
+    headers: {
+      "Ocp-Apim-Subscription-Key": process.env.FACE_KEY_01,
+      "Content-Type": "application/json",
+    },
+    params: {
+      returnFaceId: true,
+      returnFaceLandmarks: false,
+      recognitionModel: "recognition_03",
+      returnRecognitionModel: false,
+      detectionModel: "detection_02",
+    },
+    data: {
+      url: dataUrl,
+    },
+  });
+  return res;
+};
+const identify = async (personGroupId, faceId) => {
+  console.log("identify");
+  console.log({ personGroupId });
+  let res = await Axios({
+    method: "post",
+    url: `/identify`,
+    baseURL: commons.FACE_RECO_URL,
+    headers: {
+      "Ocp-Apim-Subscription-Key": process.env.FACE_KEY_01,
+      "Content-Type": "application/json",
+    },
+    data: {
+      personGroupId: personGroupId,
+      faceIds: [faceId],
+      maxNumOfCandidatesReturned: 1,
+      confidenceThreshold: 0.5,
+    },
+  });
+  return res;
+};
 const faceResources = {
   createPerson,
   createPersonGroup,
   addFace,
   trainGroup,
   listPersons,
+  detect,
+  identify,
 };
 export default faceResources;
