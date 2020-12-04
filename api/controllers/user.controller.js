@@ -23,11 +23,18 @@ const resizeImage = (id, h, w) => {
   return cloudinary.url(id, {
     height: h,
     width: w,
-    crop: "scale",
+    crop: "fit",
     format: "jpg",
   });
 };
-
+const urlResize = (imageData) => {
+  return {
+    thumb200: resizeImage(imageData.public_id, 200, 200),
+    thumb300: resizeImage(imageData.public_id, 300, 300),
+    thumb500: resizeImage(imageData.public_id, 500, 500),
+    original: imageData.secure_url,
+  };
+};
 // search all user
 const index = async (req, res, next) => {
   try {
@@ -216,12 +223,9 @@ const updateUser = async (req, res, next) => {
     let resize = null;
     if (req.file && req.file.path) {
       const result = await cloudinary.v2.uploader.upload(req.file.path);
-      resize = {
-        thumb200: resizeImage(result.public_id, 200, 200),
-        thumb300: resizeImage(result.public_id, 300, 300),
-        thumb500: resizeImage(result.public_id, 500, 500),
-        original: result.secure_url,
-      };
+      // console.log({ result });
+      resize = urlResize(result);
+      console.log({ resize });
     }
     let updateData = { ...req.body };
     if (resize) {

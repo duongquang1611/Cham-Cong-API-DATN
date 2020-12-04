@@ -13,9 +13,18 @@ const resizeImage = (id, h, w) => {
   return cloudinary.url(id, {
     height: h,
     width: w,
-    crop: "scale",
+    crop: "fit",
     format: "jpg",
   });
+};
+
+const urlResize = (imageData) => {
+  return {
+    thumb200: resizeImage(imageData.public_id, 200, 200),
+    thumb300: resizeImage(imageData.public_id, 300, 300),
+    thumb500: resizeImage(imageData.public_id, 500, 500),
+    original: imageData.secure_url,
+  };
 };
 
 const postUploadImage = async (req, res, next) => {
@@ -25,13 +34,11 @@ const postUploadImage = async (req, res, next) => {
     if (req.file && req.file.path) {
       console.log("req.file && req.file.path", req.file, req.file.path);
       result = await cloudinary.v2.uploader.upload(req.file.path);
-      // console.log("result", result)
-      resize = {
-        thumb200: resizeImage(result.public_id, 200, 200),
-        thumb300: resizeImage(result.public_id, 300, 300),
-        thumb500: resizeImage(result.public_id, 500, 500),
-        original: result.secure_url,
-      };
+
+      console.log({ result });
+      resize = urlResize(result);
+      console.log({ resize });
+      console.log({ resize });
     }
     return res.status(200).json({ ...result, resize });
   } catch (error) {

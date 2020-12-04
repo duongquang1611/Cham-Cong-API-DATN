@@ -300,14 +300,32 @@ const getDetailWorkDay = async (req, res, next) => {
 
 const updateWorkDay = async (req, res, next) => {
   try {
-    let updateData = req.body;
+    let { locationData, ...updateData } = req.body;
 
     let now = new Date();
     // let now = moment();
 
-    if (updateData.user) {
+    console.log("updateData?.userId", updateData?.userId);
+    if (updateData?.userId) {
       // cham cong ho, truyen user vao body
-      req.user = updateData.user;
+      let newUser = await userModel
+        .findById(updateData?.userId)
+        .populate({
+          path: "companyId",
+          select: "-__v",
+        })
+        .populate({
+          path: "roleId",
+          select: "-__v",
+        })
+        .populate({
+          path: "parentId",
+          select: "-__v -password",
+        })
+        .select("-__v -password")
+        .exec();
+      console.log({ newUser });
+      req.user = newUser;
     }
     let { user } = req;
     let query = {

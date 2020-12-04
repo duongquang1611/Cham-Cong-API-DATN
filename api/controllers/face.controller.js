@@ -24,9 +24,18 @@ const resizeImage = (id, h, w) => {
   return cloudinary.url(id, {
     height: h,
     width: w,
-    crop: "scale",
+    crop: "fit",
     format: "jpg",
   });
+};
+
+const urlResize = (imageData) => {
+  return {
+    thumb200: resizeImage(imageData.public_id, 200, 200),
+    thumb300: resizeImage(imageData.public_id, 300, 300),
+    thumb500: resizeImage(imageData.public_id, 500, 500),
+    original: imageData.secure_url,
+  };
 };
 
 const addFace = async (req, res, next) => {
@@ -36,8 +45,9 @@ const addFace = async (req, res, next) => {
 
     if (req.file && req.file.path) {
       const result = await cloudinary.v2.uploader.upload(req.file.path);
-      console.log("addFace ~ result", result);
-      dataUrl = result.secure_url;
+      let resize = urlResize(result);
+      console.log({ resize });
+      dataUrl = resize.thumb500;
     }
     if (dataUrl) {
       let user = await userModel.findById(_id);
@@ -76,6 +86,11 @@ const addFace = async (req, res, next) => {
       return handleError(res);
     }
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -107,6 +122,11 @@ const createPerson = async (req, res, next) => {
       return handleError(res, error.message);
     }
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -115,10 +135,10 @@ const createPersonGroup = async (req, res, next) => {
   try {
     let id = req.params.id;
     let company = await companyModel.findById(id);
-    if (company.havePersonGroup) {
-      console.log("Đã tạo Person Group rồi.");
-      return res.status(200).json(company);
-    }
+    // if (company.havePersonGroup) {
+    //   console.log("Đã tạo Person Group rồi.");
+    //   return res.status(200).json(company);
+    // }
     let createPersonGroup = await resources.createPersonGroup(
       company._id,
       company.name
@@ -135,7 +155,11 @@ const createPersonGroup = async (req, res, next) => {
       return handleError(res);
     }
   } catch (error) {
-    console.log("createPersonGroup ~ error", error);
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -145,6 +169,11 @@ const trainGroup = async (req, res, next) => {
     await resources.trainGroup(companyId);
     return res.status(200).json();
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -154,6 +183,11 @@ const listPersons = async (req, res, next) => {
     let listPersons = await resources.listPersons(companyId);
     return res.status(200).json(listPersons.data);
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -163,8 +197,10 @@ const detect = async (req, res, next) => {
 
     if (req.file && req.file.path) {
       const result = await cloudinary.v2.uploader.upload(req.file.path);
-      console.log("addFace ~ result", result);
-      dataUrl = result.secure_url;
+      // console.log("addFace ~ result", result);
+      let resize = urlResize(result);
+      console.log({ resize });
+      dataUrl = resize.thumb500;
     }
     if (dataUrl) {
       let detectData = await resources.detect(dataUrl);
@@ -178,6 +214,11 @@ const detect = async (req, res, next) => {
       return handleError(res);
     }
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -189,6 +230,11 @@ const identify = async (req, res, next) => {
     return res.status(200).json(identifyData.data);
   } catch (error) {
     console.log("error control");
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
@@ -200,8 +246,9 @@ const detectAndIdentify = async (req, res, next) => {
 
     if (req.file && req.file.path) {
       const result = await cloudinary.v2.uploader.upload(req.file.path);
-      console.log("addFace ~ result", result);
-      dataUrl = result.secure_url;
+      let resize = urlResize(result);
+      console.log({ resize });
+      dataUrl = resize.thumb500;
     }
     if (dataUrl) {
       let detectData = await resources.detect(dataUrl);
@@ -223,6 +270,11 @@ const detectAndIdentify = async (req, res, next) => {
       return handleError(res);
     }
   } catch (error) {
+    let msg = error?.response?.data?.error?.message;
+    if (msg && typeof msg === "string") {
+      console.log({ msg });
+      return handleError(res, msg);
+    }
     return handleError(res, error.message);
   }
 };
