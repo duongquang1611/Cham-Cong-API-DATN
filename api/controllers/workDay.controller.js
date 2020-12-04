@@ -342,6 +342,13 @@ const updateWorkDay = async (req, res, next) => {
     );
     let defaultCheckin = commons.setTimeToDate(detailCompany.config.checkin);
     let defaultCheckout = commons.setTimeToDate(detailCompany.config.checkout);
+    console.log({
+      allowCheckout,
+      allowCheckin,
+      defaultCheckout,
+      defaultCheckin,
+      now,
+    });
     if (!(location.latitude && location.longitude)) {
       return handleError(
         res,

@@ -252,10 +252,6 @@ const detectAndIdentify = async (req, res, next) => {
     }
     if (dataUrl) {
       let detectData = await resources.detect(dataUrl);
-      console.log(
-        "🚀 ~ file: face.controller.js ~ line 208 ~ detectAndIdentify ~ detectData",
-        detectData
-      );
       if (detectData.status === 200) {
         console.log("detect success");
         let identifyData = await resources.identify(
