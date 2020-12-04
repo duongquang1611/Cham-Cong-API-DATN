@@ -8,6 +8,7 @@ import resources from "../resources/index.js";
 import userModel from "../../models/user.model.js";
 import askDayOffModel from "../../models/askDayOff.model.js";
 const { Types } = mongoose;
+const ALLOW_DISTANCE_METERS = 0.1;
 const TYPE_ASK_COME_LATE = [
   {
     id: 0,
@@ -300,7 +301,8 @@ const getDetailWorkDay = async (req, res, next) => {
 
 const updateWorkDay = async (req, res, next) => {
   try {
-    let { locationData, ...updateData } = req.body;
+    let { location, ...updateData } = req.body;
+    console.log({ location });
 
     let now = new Date();
     // let now = moment();
@@ -324,7 +326,7 @@ const updateWorkDay = async (req, res, next) => {
         })
         .select("-__v -password")
         .exec();
-      console.log({ newUser });
+      // console.log({ newUser });
       req.user = newUser;
     }
     let { user } = req;
@@ -340,26 +342,43 @@ const updateWorkDay = async (req, res, next) => {
     );
     let defaultCheckin = commons.setTimeToDate(detailCompany.config.checkin);
     let defaultCheckout = commons.setTimeToDate(detailCompany.config.checkout);
-
+    if (!(location.latitude && location.longitude)) {
+      return handleError(
+        res,
+        "Vị trí không hợp lệ. Vui lòng kiểm tra và thử lại."
+      );
+    }
+    if (detailCompany.config.lat && detailCompany.config.long) {
+      let { lat: lat1, long: lon1 } = detailCompany.config;
+      let { latitude: lat2, longitude: lon2 } = location;
+      let distance = commons.distance2(lat1, lon1, lat2, lon2);
+      console.log({ lat1, lon1, lat2, lon2, distance });
+      if (distance > ALLOW_DISTANCE_METERS) {
+        return handleError(
+          res,
+          "Vị trí của bạn hiện tại quá xa. Không thể chấm công. Vui lòng di chuyển tới công ty hoặc liên hệ quản trị viên để biết thêm chi tiết."
+        );
+      }
+    }
     // check allow checkout, checkin
 
-    // if (updateData.isCheckout) {
-    //   let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
-    //   if (checkIsBeforeDate) {
-    //     return handleError(
-    //       res,
-    //       `Không thể thực hiện checkout sau ${detailCompany.config.allowCheckout}`
-    //     );
-    //   }
-    // } else {
-    //   let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckin);
-    //   if (checkIsBeforeDate) {
-    //     return handleError(
-    //       res,
-    //       `Không thể thực hiện checkin trước ${detailCompany.config.allowCheckin}`
-    //     );
-    //   }
-    // }
+    if (updateData.isCheckout) {
+      let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
+      if (checkIsBeforeDate) {
+        return handleError(
+          res,
+          `Không thể thực hiện checkout sau ${detailCompany.config.allowCheckout}`
+        );
+      }
+    } else {
+      let checkIsBeforeDate = commons.isBeforeDate(now, allowCheckin);
+      if (checkIsBeforeDate) {
+        return handleError(
+          res,
+          `Không thể thực hiện checkin trước ${detailCompany.config.allowCheckin}`
+        );
+      }
+    }
 
     // set parentId, company
     updateData = {
