@@ -139,9 +139,7 @@ const index = async (req, res, next) => {
       {
         $match: search,
       },
-      {
-        $sort: sort,
-      },
+
       ...commons.getPageSize(page, size),
       commons.lookUp("roleId", "roles", "_id", "roleId"),
       { $unwind: { path: "$roleId", preserveNullAndEmptyArrays: true } },
@@ -161,6 +159,9 @@ const index = async (req, res, next) => {
           password: 0,
           __v: 0,
         },
+      },
+      {
+        $sort: sort,
       },
       // commons.groupBy(),
     ]);

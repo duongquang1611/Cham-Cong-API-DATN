@@ -5,27 +5,27 @@ const ROLE_DATA = [
   {
     name: "Nhân viên",
     code: "staff",
-    level: "",
+    level: 1,
   },
   {
     name: "Quản lý",
     code: "manager",
-    level: "",
+    level: 2,
   },
   {
     name: "Quản lý nhân sự",
     code: "admin_company",
-    level: "",
+    level: 2,
   },
   {
     name: "Giám đốc",
     code: "director",
-    level: "",
+    level: 3,
   },
   {
     name: "Quản trị hệ thống",
     code: "admin_system",
-    level: "",
+    level: -1,
   },
 ];
 
