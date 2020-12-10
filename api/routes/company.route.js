@@ -31,6 +31,14 @@ router.get("/ask-day-off", auth, controller.getListAskDayOffInCompany);
 
 router.get("/users", [auth], controller.getUserCompany);
 
+// report
+// work day
+router.get("/:id/report", [auth, checkObjectId], controller.getReport);
+
+// come late
+
+// leave early
+
 // user in company
 router.get("/:id/users", [auth, checkObjectId], controller.getUserCompany);
 

@@ -8,8 +8,9 @@ import companyConfigModel from "../../models/companyConfig.model.js";
 import workDayModel from "../../models/workDay.model.js";
 import userController from "./user.controller.js";
 import resources from "../resources/index.js";
-
+import moment from "moment";
 import dotenv from "dotenv";
+import userModel from "../../models/user.model.js";
 dotenv.config();
 const { Types } = mongoose;
 
@@ -308,7 +309,9 @@ const getListWorkDayCompany = async (req, res, next) => {
     }
 
     let search = {};
-    if (user?.companyId?._id) {
+    if (companyId) {
+      search.companyId = Types.ObjectId(companyId);
+    } else if (user?.companyId?._id) {
       search.companyId = Types.ObjectId(user?.companyId?._id);
     } else {
       console.log("getListWorkDayCompany");
@@ -389,8 +392,225 @@ const getListWorkDayCompany = async (req, res, next) => {
         $sort: sort,
       },
     ]);
+    let newWorkDays = {};
+    workDays.forEach((item) => {
+      Object.entries(item).map(([key, value]) => {
+        newWorkDays[key] = value;
+      });
+    });
     console.log("workDays company", workDays.length);
     return res.status(200).json(workDays || []);
+  } catch (error) {
+    console.log("error", error);
+    return handleError(res, error.message);
+  }
+};
+
+const getReport = async (req, res, next) => {
+  let companyId = req.params.id;
+
+  try {
+    let workDays = [];
+    let user = { ...req.user };
+    let {
+      page = 0,
+      size = 10000,
+      from = "1970-01-01",
+      to = "2050-12-30",
+      dayWork,
+      userId,
+      comeLeave,
+      parentId,
+      statusComeLeaveAsk,
+      me,
+      text,
+      sortType,
+      sortValue,
+      reportType = "work_day",
+      month,
+      year,
+      ...otherSearch
+    } = req.query;
+
+    let sort = {};
+    if (sortType) {
+      sort[sortType] = parseInt(sortValue);
+    } else {
+      sort = SORT_TIME_UPDATED_DESC;
+    }
+
+    let search = {};
+
+    // search company
+    if (!companyId) {
+      companyId = user?.companyId?._id;
+    }
+    search.companyId = Types.ObjectId(companyId);
+
+    // search with input text
+    if (text && text.trim().length !== 0) {
+      search = {
+        ...search,
+        $text: { $search: text.trim() },
+      };
+    }
+
+    // search day work
+    if (dayWork) search.dayWork = dayWork;
+    else {
+      search.dayWork = {
+        $gte: from,
+        // $lte: new Date(),
+        $lte: to,
+      };
+    }
+
+    // search ask come leave
+    if (comeLeave) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.time": { $ne: null } },
+          { "leaveEarlyAsk.time": { $ne: null } },
+        ],
+      };
+    }
+
+    // search status come leave
+    if (statusComeLeaveAsk) {
+      search = {
+        ...search,
+        $or: [
+          { "comeLateAsk.status": parseFloat(statusComeLeaveAsk) },
+          { "leaveEarlyAsk.status": parseFloat(statusComeLeaveAsk) },
+        ],
+      };
+    }
+
+    if (reportType === "work_day") {
+      // ngay cong
+      search = {
+        ...search,
+        $or: [{ checkin: { $ne: null } }, { checkout: { $ne: null } }],
+      };
+    } else if (reportType === "come_late") {
+      // di muon
+      // $gte: greater than or equal
+      // $lte: less thanh or equal
+      // $gt: greater than
+      // $lt: less than
+      search.minutesComeLate = { $gt: 0 };
+    } else if (reportType === "leave_early") {
+      search.minutesLeaveEarly = { $gt: 0 };
+    } else {
+      // report type in the feature
+    }
+
+    // search chinh chu
+    if (me) {
+      // chinh chu
+      console.log("req.user._id", req.user._id);
+      search.userId = Types.ObjectId(req.user._id);
+    }
+
+    // search input userId
+    if (userId) {
+      search.userId = Types.ObjectId(userId);
+    }
+
+    // search by parentId
+    if (parentId) {
+      search.parentId = Types.ObjectId(parentId);
+    }
+
+    // search by other search, value bi convert thanh string ne can convert lai
+    Object.entries(otherSearch).map(([key, value]) => {
+      if (value == "true") search[key] = true;
+      else if (value == "false") search[key] = false;
+      else if (commons.isNumeric(value)) search[key] = parseFloat(value);
+      else search[key] = value;
+    });
+
+    console.log("search", search, commons.getPageSize(page, size));
+
+    workDays = await workDayModel.aggregate([
+      {
+        $match: search,
+      },
+
+      ...commons.getPageSize(page, size),
+      // commons.lookUp("userId", "users", "_id", "userId"),
+      // { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+          results: { $push: "$$ROOT" },
+        },
+      },
+      {
+        // create 1 field with key is userId
+        $addFields: {
+          obj: {
+            $let: {
+              vars: { array: [[{ $toString: "$_id" }, "$results"]] },
+              in: { $arrayToObject: "$$array" },
+            },
+          },
+        },
+      },
+
+      { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$obj"] } } },
+      {
+        $project: {
+          obj: 0,
+          results: 0,
+          _id: 0,
+          count: 0,
+        },
+      },
+      {
+        $sort: sort,
+      },
+    ]);
+    let newWorkDays = {};
+    workDays.forEach((item) => {
+      Object.entries(item).map(([key, value]) => {
+        newWorkDays[key] = value;
+      });
+    });
+
+    // generate report
+    let dateSearch = new Date();
+    // let monthDefault = dateSearch.getMonth() + 1;
+    // let yearDefault = dateSearch.getFullYear();
+    if (year) {
+      dateSearch.setFullYear(year);
+    }
+    if (month) {
+      dateSearch.setMonth(month - 1);
+    }
+
+    let workDayReport = await resources.createReport(
+      newWorkDays,
+      dateSearch,
+      companyId
+    );
+
+    if (reportType === "work_day") {
+      // ngay cong
+    } else if (reportType === "come_late") {
+      // di muon
+    } else if (reportType === "leave_early") {
+    } else {
+      // report type in the feature
+    }
+
+    // console.log("workDays company", workDays.length);
+    // return res.status(200).json(workDays || []);
+    return res
+      .status(200)
+      .json({ workDays: newWorkDays, report: workDayReport });
   } catch (error) {
     console.log("error", error);
     return handleError(res, error.message);
@@ -670,4 +890,5 @@ export default {
   getListWorkDayCompany,
   getListAskComeLeaveInCompany,
   getListAskDayOffInCompany,
+  getReport,
 };
