@@ -590,10 +590,20 @@ const getReport = async (req, res, next) => {
     if (month) {
       dateSearch.setMonth(month - 1);
     }
+    let daysInMonth = moment(dateSearch).daysInMonth();
+
+    let tableHead = ["STT", "Họ tên", "Chức vụ", "Ngày sinh"];
+    let widthArr = [40, 150, 100, 120];
+    for (let i = 0; i < daysInMonth + 1; i++) {
+      if (i === daysInMonth) {
+        tableHead.push("Tổng");
+      } else tableHead.push(i + 1);
+      widthArr.push(60);
+    }
 
     let workDayReport = await resources.createReport(
       newWorkDays,
-      dateSearch,
+      daysInMonth,
       companyId
     );
 
@@ -608,9 +618,16 @@ const getReport = async (req, res, next) => {
 
     // console.log("workDays company", workDays.length);
     // return res.status(200).json(workDays || []);
-    return res
-      .status(200)
-      .json({ workDays: newWorkDays, report: workDayReport });
+    return res.status(200).json({
+      workDays: newWorkDays,
+      report: {
+        workDay: workDayReport,
+        comeLate: [],
+        leaveEarly: [],
+      },
+      tableHead,
+      widthArr,
+    });
   } catch (error) {
     console.log("error", error);
     return handleError(res, error.message);
