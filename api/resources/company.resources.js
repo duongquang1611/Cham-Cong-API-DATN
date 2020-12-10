@@ -24,82 +24,119 @@ const getDetailCompany = async (companyId) => {
     return {};
   }
 };
-const createReport = async (
-  data,
-  date = new Date(),
-  companyId,
-  type = "work_day"
-) => {
-  let daysInMonth = moment(date).daysInMonth();
+const createReport = async (data, daysInMonth, companyId) => {
   let usersInCompany = await userModel
     .find({
       companyId: Types.ObjectId(companyId),
     })
     .populate("roleId");
 
-  let tableHead = ["STT", "Họ tên", "Chức vụ", "Ngày sinh"];
-  let widthArr = [40, 150, 100, 120];
-  for (let i = 0; i < daysInMonth + 1; i++) {
-    if (i === daysInMonth) {
-      tableHead.push("Tổng");
-    } else tableHead.push(i + 1);
-    widthArr.push(60);
-  }
   let dataEachUser = null;
   let dayActiveWork = [];
-  let rowData = [];
-  let msg = "";
-  let tableData = [];
+  let dataComeLate = [];
+  let dataLeaveEarly = [];
+  let rowData = [[], [], []];
+  let msgWorkDay = 0;
+  let msgComeLate = 0;
+  let msgLeaveEarly = 0;
+  let tableData = { workDay: [], comeLate: [], leaveEarly: [] };
   usersInCompany.forEach((userData, index) => {
     dataEachUser = data[userData?._id];
-    rowData = [];
-    msg = "";
+    rowData = [[], [], []];
     if (dataEachUser) {
       dayActiveWork = dataEachUser.map((item) => item.day);
+      dataComeLate = dataEachUser.filter((item) => {
+        if (item.minutesComeLate) return item.minutesComeLate > 0;
+        return;
+      });
+      dataLeaveEarly = dataEachUser.filter((item) => {
+        if (item.minutesLeaveEarly) return item.minutesLeaveEarly > 0;
+        return;
+      });
     } else {
       dayActiveWork = [];
+      dataComeLate = [];
+      dataLeaveEarly = [];
     }
     for (let j = -3; j < daysInMonth + 2; j++) {
       switch (j) {
         case -3:
-          rowData.push(index + 1);
+          rowData[0].push(index + 1);
+          rowData[1].push(index + 1);
+          rowData[2].push(index + 1);
           break;
         case -2:
-          rowData.push(userData?.name);
+          rowData[0].push(userData?.name);
+          rowData[1].push(userData?.name);
+          rowData[2].push(userData?.name);
           break;
         case -1:
-          rowData.push(userData?.roleId?.name);
+          rowData[0].push(userData?.roleId?.name);
+          rowData[1].push(userData?.roleId?.name);
+          rowData[2].push(userData?.roleId?.name);
           break;
         case 0:
+          let dateFormat = commons.noData;
           if (userData?.dateOfBirth) {
-            rowData.push(
-              moment(userData?.dateOfBirth).format(commons.FORMAT_DATE_VN)
+            dateFormat = moment(userData?.dateOfBirth).format(
+              commons.FORMAT_DATE_VN
             );
-          } else {
-            rowData.push(commons.noData);
           }
+          rowData[0].push(dateFormat);
+          rowData[1].push(dateFormat);
+          rowData[2].push(dateFormat);
           break;
         case daysInMonth + 1:
           // sum
-          msg = 0;
+          msgWorkDay = 0;
+          msgComeLate = 0;
+          msgLeaveEarly = 0;
           if (dataEachUser && dataEachUser.length > 0) {
-            msg = dataEachUser.length;
+            msgWorkDay = dataEachUser.length;
           }
-          rowData.push(msg);
+          if (dataComeLate && dataComeLate.length > 0)
+            msgComeLate = dataComeLate.reduce(
+              (accumulator, currentValue) =>
+                accumulator + currentValue.minutesComeLate,
+              0
+            );
+          if (dataLeaveEarly && dataLeaveEarly.length > 0)
+            msgLeaveEarly = dataLeaveEarly.reduce(
+              (accumulator, currentValue) =>
+                accumulator + currentValue.minutesLeaveEarly,
+              0
+            );
+          rowData[0].push(msgWorkDay);
+          rowData[1].push(msgComeLate);
+          rowData[2].push(msgLeaveEarly);
           break;
 
         default:
           // check or uncheck
-          msg = "";
+          msgWorkDay = "";
+          msgComeLate = "";
+          msgLeaveEarly = "";
           if (dayActiveWork && dayActiveWork.length > 0) {
-            if (dayActiveWork.includes(j)) msg = "X";
+            if (dayActiveWork.includes(j)) msgWorkDay = "X";
+          }
+          if (dataComeLate && dataComeLate.length > 0) {
+            let dayComeLate = dataComeLate.find((item) => item.day == j);
+            if (dayComeLate) msgComeLate = dayComeLate.minutesComeLate;
+          }
+          if (dataLeaveEarly && dataLeaveEarly.length > 0) {
+            let dayLeaveEarly = dataLeaveEarly.find((item) => item.day == j);
+            if (dayLeaveEarly) msgLeaveEarly = dayLeaveEarly.minutesLeaveEarly;
           }
 
-          rowData.push(msg);
+          rowData[0].push(msgWorkDay);
+          rowData[1].push(msgComeLate);
+          rowData[2].push(msgLeaveEarly);
           break;
       }
     }
-    tableData.push(rowData);
+    tableData.workDay.push(rowData[0]);
+    tableData.comeLate.push(rowData[1]);
+    tableData.leaveEarly.push(rowData[2]);
   });
   return tableData;
 };

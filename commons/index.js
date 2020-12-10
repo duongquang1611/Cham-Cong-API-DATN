@@ -6,6 +6,7 @@ import moment from "moment";
 const FACE_RECO_URL = "https://cham-cong.cognitiveservices.azure.com/face/v1.0";
 const formatDayWork = "YYYY-MM-DD";
 const noData = "Chưa có dữ liệu";
+const FORMAT_DATE_VN = "DD/MM/YYYY";
 const getUserIdInToken = (req) => {
   const authorization = req.header("Authorization");
   const tokenArray = authorization.split(" ");
@@ -160,6 +161,7 @@ const commons = {
   FACE_RECO_URL,
   formatDayWork,
   noData,
+  FORMAT_DATE_VN,
   handleError,
   getUserIdInToken,
   getDiffTime,

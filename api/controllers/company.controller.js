@@ -427,8 +427,6 @@ const getReport = async (req, res, next) => {
       sortType,
       sortValue,
       reportType = "work_day",
-      month,
-      year,
       ...otherSearch
     } = req.query;
 
@@ -499,8 +497,10 @@ const getReport = async (req, res, next) => {
       // $lte: less thanh or equal
       // $gt: greater than
       // $lt: less than
+      // k dung
       search.minutesComeLate = { $gt: 0 };
     } else if (reportType === "leave_early") {
+      // k dung
       search.minutesLeaveEarly = { $gt: 0 };
     } else {
       // report type in the feature
@@ -584,11 +584,11 @@ const getReport = async (req, res, next) => {
     let dateSearch = new Date();
     // let monthDefault = dateSearch.getMonth() + 1;
     // let yearDefault = dateSearch.getFullYear();
-    if (year) {
-      dateSearch.setFullYear(year);
+    if (req.query.year) {
+      dateSearch.setFullYear(req.query.year);
     }
-    if (month) {
-      dateSearch.setMonth(month - 1);
+    if (req.query.month) {
+      dateSearch.setMonth(req.query.month - 1);
     }
     let daysInMonth = moment(dateSearch).daysInMonth();
 
@@ -601,30 +601,17 @@ const getReport = async (req, res, next) => {
       widthArr.push(60);
     }
 
-    let workDayReport = await resources.createReport(
+    let report = await resources.createReport(
       newWorkDays,
       daysInMonth,
       companyId
     );
 
-    if (reportType === "work_day") {
-      // ngay cong
-    } else if (reportType === "come_late") {
-      // di muon
-    } else if (reportType === "leave_early") {
-    } else {
-      // report type in the feature
-    }
-
     // console.log("workDays company", workDays.length);
     // return res.status(200).json(workDays || []);
     return res.status(200).json({
       workDays: newWorkDays,
-      report: {
-        workDay: workDayReport,
-        comeLate: [],
-        leaveEarly: [],
-      },
+      report,
       tableHead,
       widthArr,
     });
