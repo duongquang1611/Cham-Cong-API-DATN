@@ -25,11 +25,12 @@ const getDetailCompany = async (companyId) => {
   }
 };
 const createReport = async (data, daysInMonth, companyId) => {
-  let usersInCompany = await userModel
-    .find({
-      companyId: Types.ObjectId(companyId),
-    })
-    .populate("roleId");
+  let usersInCompany = await userModel.aggregate([
+    { $match: { companyId: Types.ObjectId(companyId) } },
+    commons.lookUp("roleId", "roles", "_id", "roleId"),
+    { $unwind: { path: "$roleId", preserveNullAndEmptyArrays: true } },
+    { $sort: { "roleId.level": -1 } },
+  ]);
 
   let dataEachUser = null;
   let dayActiveWork = [];
@@ -107,8 +108,8 @@ const createReport = async (data, daysInMonth, companyId) => {
               0
             );
           rowData[0].push(msgWorkDay);
-          rowData[1].push(msgComeLate);
-          rowData[2].push(msgLeaveEarly);
+          rowData[1].push(msgComeLate + "ph");
+          rowData[2].push(msgLeaveEarly + "ph");
           break;
 
         default:
@@ -129,8 +130,8 @@ const createReport = async (data, daysInMonth, companyId) => {
           }
 
           rowData[0].push(msgWorkDay);
-          rowData[1].push(msgComeLate);
-          rowData[2].push(msgLeaveEarly);
+          rowData[1].push(msgComeLate ? msgComeLate + "ph" : msgComeLate);
+          rowData[2].push(msgLeaveEarly ? msgLeaveEarly + "ph" : msgLeaveEarly);
           break;
       }
     }
