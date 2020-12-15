@@ -182,15 +182,42 @@ const detailCompany = async (req, res, next) => {
   console.log("detailCompany");
 
   try {
+    let companyId = req.params.id;
     let company = await companyModel
-      .findOne({ _id: req.params.id }, " -__v")
+      .findOne({ _id: companyId }, " -__v")
       .populate({ path: "createdBy", select: "-__v -password" })
       .populate({ path: "updatedBy", select: "-__v -password" });
-    let config = await companyConfigModel.findOne({ companyId: req.params.id });
+    let config = await companyConfigModel.findOne({ companyId: companyId });
     if (!company) {
       return handleError(res, "Company không tồn tại.");
     }
-    company = { ...company._doc, config: { ...config._doc } };
+    // let users = await userModel
+    //   .find({ companyId })
+    //   .populate({ path: "roleId" })
+    //   .populate({ path: "parentId", select: "-__v -password" })
+    //   .select("-__v -password")
+    //   .sort({ "roleId.level": -1 });
+    let users = await userModel.aggregate([
+      { $match: { companyId: Types.ObjectId(companyId) } },
+      commons.lookUp("parentId", "users", "_id", "parentId"),
+      commons.lookUp("roleId", "roles", "_id", "roleId"),
+      { $unwind: { path: "$roleId", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$parentId", preserveNullAndEmptyArrays: true } },
+      { $sort: { "roleId.level": -1 } },
+      {
+        $project: {
+          __v: 0,
+          password: 0,
+          "parentId.password": 0,
+        },
+      },
+    ]);
+    console.log(users.length);
+    company = {
+      ...company._doc,
+      config: config?._doc || {},
+      users: users || [],
+    };
     return res.status(200).json(company);
   } catch (error) {
     console.log("error", error);
