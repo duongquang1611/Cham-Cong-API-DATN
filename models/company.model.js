@@ -33,5 +33,5 @@ var companySchema = new Schema(
     timestamps: true, // createdAt, updatedAt
   }
 );
-
+companySchema.index({ "$**": "text" });
 export default model("Company", companySchema);

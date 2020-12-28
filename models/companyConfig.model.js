@@ -35,5 +35,5 @@ var companyConfigSchema = new Schema(
     timestamps: true,
   }
 );
-
+companyConfigSchema.index({ "$**": "text" });
 export default model("CompanyConfig", companyConfigSchema, "company_config");

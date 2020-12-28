@@ -43,5 +43,5 @@ var workDaySchema = new Schema(
     timestamps: true,
   }
 );
-
+workDaySchema.index({ "$**": "text" });
 export default model("WorkDay", workDaySchema, "work_day");

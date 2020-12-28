@@ -28,4 +28,6 @@ var askDayOffSchema = new Schema(
   }
 );
 
+askDayOffSchema.index({ "$**": "text" });
+
 export default model("AskDayOff", askDayOffSchema, "day_off");

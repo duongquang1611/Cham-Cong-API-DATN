@@ -7,5 +7,5 @@ var roleSchema = new Schema({
   code: { type: String, required: true, default: null },
   level: { type: Number, default: null },
 });
-
+roleSchema.index({ "$**": "text" });
 export default model("Role", roleSchema);

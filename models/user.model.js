@@ -37,9 +37,15 @@ var userSchema = new Schema(
       original: { type: String, default: null },
     },
     personId: { type: String, default: null },
+    // test: { type: String, default: null },
   },
   { timestamps: true }
 );
+
+// create text index in all field
+userSchema.index({ "$**": "text" });
+
+// userSchema.index({ test: "text" });
 userSchema.methods.encryptPassword = function (password) {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(5), null);
 };
