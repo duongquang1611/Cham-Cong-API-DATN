@@ -42,6 +42,8 @@ const postSignIn = async (req, res, next) => {
       config.JWT_SECRET,
       // default expired token la 30 ngay
       { expiresIn: 30 * 60 * 60 * 1000 }
+      // test expire token
+      // { expiresIn: 10 }
     );
 
     let userWithoutPassword = { ...user._doc };

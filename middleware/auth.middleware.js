@@ -22,6 +22,11 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (e) {
+    if (e.message === "jwt expired")
+      return handleError(
+        res,
+        "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại."
+      );
     return handleError(res, "Token không hợp lệ.");
   }
 };
