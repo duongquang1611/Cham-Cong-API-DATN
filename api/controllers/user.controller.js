@@ -296,10 +296,44 @@ const createPerson = async (req, res, next) => {
   }
 };
 
+const putChangePassword = async (req, res, next) => {
+  try {
+    let data = req.body;
+    let user = await userModel.findById(req.user._id);
+    if (!user.validPassword(data.oldPassword)) {
+      return handleError(res, "Mật khẩu không chính xác.");
+    }
+    if (data.newPassword === data.oldPassword) {
+      return handleError(res, "Mật khẩu mới không được giống mật khẩu cũ.");
+    }
+    const passwordHash = await user.encryptPassword(data.newPassword);
+
+    let newUser = await userModel
+      .findByIdAndUpdate(
+        req.user._id,
+        { password: passwordHash },
+        {
+          new: true,
+        }
+      )
+      .select("-__v -password")
+      .populate({ path: "roleId" })
+      .populate({ path: "companyId" })
+      .populate({
+        path: "parentId",
+        select: "-__v -password",
+      });
+    return res.status(200).json(newUser);
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
+
 export default {
   index,
   detailUser,
   deleteUser,
   updateUser,
   createPerson,
+  putChangePassword,
 };
