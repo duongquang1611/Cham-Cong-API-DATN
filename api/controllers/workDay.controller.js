@@ -8,7 +8,7 @@ import resources from "../resources/index.js";
 import userModel from "../../models/user.model.js";
 import askDayOffModel from "../../models/askDayOff.model.js";
 const { Types } = mongoose;
-const ALLOW_DISTANCE_METERS = 0.1;
+const ALLOW_DISTANCE_METERS = 0.2;
 const TYPE_ASK_COME_LATE = [
   {
     id: 0,
@@ -349,6 +349,7 @@ const updateWorkDay = async (req, res, next) => {
       defaultCheckin,
       now,
     });
+    // check location
     if (!(location.latitude && location.longitude)) {
       return handleError(
         res,

@@ -45,13 +45,16 @@ const createReport = async (data, daysInMonth, companyId) => {
     dataEachUser = data[userData?._id];
     rowData = [[], [], []];
     if (dataEachUser) {
-      dayActiveWork = dataEachUser.map((item) => item.day);
+      dayActiveWork = dataEachUser
+        .filter((item) => item?.isSuccessDay)
+        .map((item) => item.day);
+
       dataComeLate = dataEachUser.filter((item) => {
-        if (item.minutesComeLate) return item.minutesComeLate > 0;
+        if (item?.minutesComeLate) return item.minutesComeLate > 0;
         return;
       });
       dataLeaveEarly = dataEachUser.filter((item) => {
-        if (item.minutesLeaveEarly) return item.minutesLeaveEarly > 0;
+        if (item?.minutesLeaveEarly) return item.minutesLeaveEarly > 0;
         return;
       });
     } else {
@@ -92,8 +95,8 @@ const createReport = async (data, daysInMonth, companyId) => {
           msgWorkDay = 0;
           msgComeLate = 0;
           msgLeaveEarly = 0;
-          if (dataEachUser && dataEachUser.length > 0) {
-            msgWorkDay = dataEachUser.length;
+          if (dataEachUser && dataEachUser.length > 0 && dayActiveWork) {
+            msgWorkDay = dayActiveWork.length;
           }
           if (dataComeLate && dataComeLate.length > 0)
             msgComeLate = dataComeLate.reduce(
