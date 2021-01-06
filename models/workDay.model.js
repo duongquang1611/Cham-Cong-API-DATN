@@ -31,12 +31,14 @@ var workDaySchema = new Schema(
       title: { type: String, default: null }, //put
       status: { type: Number, default: null }, //put
       reason: { type: String, default: null }, //put
+      acceptedBy: { type: Types.ObjectId, default: null, ref: "User" },
     },
     leaveEarlyAsk: {
       time: { type: String, default: null }, //put
       title: { type: String, default: null }, //put
       reason: { type: String, default: null }, //put
       status: { type: Number, default: null }, //put
+      acceptedBy: { type: Types.ObjectId, default: null, ref: "User" },
     },
   },
   {

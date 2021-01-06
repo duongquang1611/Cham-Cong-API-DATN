@@ -203,7 +203,6 @@ const getAskComeLeave = async (req, res, next) => {
         };
       }
     }
-
     if (userId) {
       search.userId = Types.ObjectId(userId);
     }
@@ -233,12 +232,38 @@ const getAskComeLeave = async (req, res, next) => {
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
       { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      commons.lookUp(
+        "comeLateAsk.acceptedBy",
+        "users",
+        "_id",
+        "comeLateAsk.acceptedBy"
+      ),
+      {
+        $unwind: {
+          path: "$comeLateAsk.acceptedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      commons.lookUp(
+        "leaveEarlyAsk.acceptedBy",
+        "users",
+        "_id",
+        "leaveEarlyAsk.acceptedBy"
+      ),
+      {
+        $unwind: {
+          path: "$leaveEarlyAsk.acceptedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
           "userId.__v": 0,
           __v: 0,
+          "leaveEarlyAsk.acceptedBy.password": 0,
+          "comeLateAsk.acceptedBy.password": 0,
         },
       },
       // commons.groupBy(),
@@ -446,6 +471,7 @@ const putAskComeLeave = async (req, res, next) => {
       reason = "",
       status = 0,
       userId,
+      acceptedBy,
     } = req.body;
     let dayWork = moment(time).format(commons.formatDayWork);
     let user = req.user;
@@ -479,6 +505,16 @@ const putAskComeLeave = async (req, res, next) => {
           reason,
         },
       };
+      if (parseInt(status) != 0) {
+        // duyet don xin
+        if (acceptedBy) {
+          // co nguoi duyet
+          updateData.comeLateAsk.acceptedBy = Types.ObjectId(acceptedBy);
+        } else {
+          // quan ly duyet
+          updateData.comeLateAsk.acceptedBy = Types.ObjectId(req.user._id);
+        }
+      }
     }
     if (typeAsk === "leaveEarlyAsk") {
       updateData = {
@@ -490,6 +526,16 @@ const putAskComeLeave = async (req, res, next) => {
           reason,
         },
       };
+      if (parseInt(status) != 0) {
+        // duyet don xin
+        if (acceptedBy) {
+          // co nguoi duyet
+          updateData.leaveEarlyAsk.acceptedBy = Types.ObjectId(acceptedBy);
+        } else {
+          // quan ly duyet
+          updateData.leaveEarlyAsk.acceptedBy = Types.ObjectId(req.user._id);
+        }
+      }
     }
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
     // Since upsert creates a document if not finds a document, you don't need to create another one manually.
@@ -575,18 +621,26 @@ const getAskDayOff = async (req, res, next) => {
       ...commons.getPageSize(page, size),
       commons.lookUp("userId", "users", "_id", "userId"),
       { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      commons.lookUp("acceptedBy", "users", "_id", "acceptedBy"),
+      {
+        $unwind: {
+          path: "$acceptedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
           "userId.__v": 0,
           __v: 0,
+          "acceptedBy.password": 0,
         },
       },
       // commons.groupBy(),
     ]);
 
-    console.log("dayOffs", dayOffs);
+    console.log("dayOffs", dayOffs.length);
     return res.status(200).json(dayOffs || []);
     // return res.status(200).json(workDays || []);
   } catch (error) {
@@ -605,6 +659,7 @@ const putAskDayOff = async (req, res, next) => {
       reason,
       status,
       typeAsk: type,
+      acceptedBy,
     } = req.body;
     let user = req.user;
     if (userId) {
@@ -629,6 +684,16 @@ const putAskDayOff = async (req, res, next) => {
       status: parseInt(status),
       type,
     };
+    if (parseInt(status) != 0) {
+      // duyet don xin
+      if (acceptedBy) {
+        // co nguoi duyet
+        updateData.acceptedBy = Types.ObjectId(acceptedBy);
+      } else {
+        // quan ly duyet
+        updateData.acceptedBy = Types.ObjectId(req.user._id);
+      }
+    }
 
     let dayOff = await askDayOffModel
       .findOneAndUpdate(query, updateData, options)

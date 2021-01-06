@@ -19,6 +19,7 @@ var askDayOffSchema = new Schema(
     title: { type: String, default: null },
     reason: { type: String, default: null },
     status: { type: Number, default: null },
+    acceptedBy: { type: Types.ObjectId, default: null, ref: "User" },
     // 0: chờ duyệt
     // 1: đã đồng ý
     //-1: từ chối

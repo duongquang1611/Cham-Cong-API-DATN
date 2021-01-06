@@ -723,6 +723,7 @@ const getListAskComeLeaveInCompany = async (req, res, next) => {
     if (userId) {
       search.userId = Types.ObjectId(userId);
     }
+
     if (parentId) {
       search.parentId = Types.ObjectId(parentId);
     }
@@ -741,14 +742,38 @@ const getListAskComeLeaveInCompany = async (req, res, next) => {
         $match: search,
       },
       ...commons.getPageSize(page, size),
-      // commons.lookUp("userId", "users", "_id", "userId"),
-      // { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
+      commons.lookUp(
+        "comeLateAsk.acceptedBy",
+        "users",
+        "_id",
+        "comeLateAsk.acceptedBy"
+      ),
+      {
+        $unwind: {
+          path: "$comeLateAsk.acceptedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      commons.lookUp(
+        "leaveEarlyAsk.acceptedBy",
+        "users",
+        "_id",
+        "leaveEarlyAsk.acceptedBy"
+      ),
+      {
+        $unwind: {
+          path: "$leaveEarlyAsk.acceptedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
           // select field to show, hide
           "userId.password": 0,
           "userId.__v": 0,
           __v: 0,
+          "leaveEarlyAsk.acceptedBy.password": 0,
+          "comeLateAsk.acceptedBy.password": 0,
         },
       },
       {
