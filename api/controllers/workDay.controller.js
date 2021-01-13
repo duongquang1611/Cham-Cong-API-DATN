@@ -7,6 +7,7 @@ import moment from "moment";
 import resources from "../resources/index.js";
 import userModel from "../../models/user.model.js";
 import askDayOffModel from "../../models/askDayOff.model.js";
+import { hostname } from "os";
 const { Types } = mongoose;
 const ALLOW_DISTANCE_METERS = 0.2;
 const TYPE_ASK_COME_LATE = [
@@ -367,13 +368,13 @@ const updateWorkDay = async (req, res, next) => {
     );
     let defaultCheckin = commons.setTimeToDate(detailCompany.config.checkin);
     let defaultCheckout = commons.setTimeToDate(detailCompany.config.checkout);
-    console.log({
-      allowCheckout,
-      allowCheckin,
-      defaultCheckout,
-      defaultCheckin,
-      now,
-    });
+    // console.log({
+    //   allowCheckout,
+    //   allowCheckin,
+    //   defaultCheckout,
+    //   defaultCheckin,
+    //   now,
+    // });
     // check location
     if (!(location.latitude && location.longitude)) {
       return handleError(
@@ -394,7 +395,6 @@ const updateWorkDay = async (req, res, next) => {
       }
     }
     // check allow checkout, checkin
-
     if (updateData.isCheckout) {
       let checkIsBeforeDate = commons.isBeforeDate(allowCheckout, now);
       if (checkIsBeforeDate) {
@@ -425,14 +425,23 @@ const updateWorkDay = async (req, res, next) => {
 
     if (!updateData.dayWork) {
       query.dayWork = moment(now).format(commons.formatDayWork);
+    } else {
+      query.dayWork = updateData.dayWork;
     }
+    let oldData = await workDayModel.findOne(query);
 
     // time checkin auto khoi tao khi tao ban ghi
     if (updateData.isCheckout) {
       // checkout
 
-      let diff = commons.getDurationToMinutes(defaultCheckout, now, false);
       // date1 - date2
+      let diff = commons.getDurationToMinutes(defaultCheckout, now, false);
+      // 11h ,12h -> < 0
+      // 13h, 12h -> > 0
+      if (oldData?.minutesLeaveEarly) {
+        diff = (diff < 0 ? 0 : diff) + (oldData?.minutesLeaveEarly || 0);
+      }
+
       updateData = {
         ...updateData,
         isSuccessDay: true,
@@ -440,8 +449,13 @@ const updateWorkDay = async (req, res, next) => {
         checkout: now,
       };
     } else {
-      let diff = commons.getDurationToMinutes(defaultCheckin, now, false);
       // date1-date2
+      let diff = commons.getDurationToMinutes(defaultCheckin, now, false);
+      if (oldData?.minutesComeLate) {
+        diff =
+          (diff < 0 ? Math.abs(diff) : 0) + (oldData?.minutesComeLate || 0);
+        diff = diff < 0 ? 0 : diff;
+      }
       updateData = {
         ...updateData,
         checkin: now,
@@ -451,7 +465,7 @@ const updateWorkDay = async (req, res, next) => {
 
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
     // Since upsert creates a document if not finds a document, you don't need to create another one manually.
-
+    console.log({ query, updateData, options });
     let workDay = await workDayModel
       .findOneAndUpdate(query, updateData, options)
       .select("-__v");
@@ -484,6 +498,17 @@ const putAskComeLeave = async (req, res, next) => {
       userId: Types.ObjectId(userId || user._id),
       dayWork: dayWork,
     };
+    let oldData = await workDayModel.findOne(query);
+    if (parseInt(status) === 0) {
+      if (oldData && oldData[typeAsk] && oldData[typeAsk]?.time) {
+        return commons.handleError(
+          res,
+          `Bạn đã xin ${
+            typeAsk === "comeLateAsk" ? "đi muộn" : "về sớm"
+          } ngày này rồi!`
+        );
+      }
+    }
 
     let updateData = {
       parentId: user?.parentId?._id || null,
@@ -494,6 +519,15 @@ const putAskComeLeave = async (req, res, next) => {
     // 0: chờ duyệt
     // 1: đã chấp nhận
     // -1: từ chối
+    let detailCompany = await resources.getDetailCompany(user.companyId._id);
+    let defaultCheckin = commons.setTimeToDate(
+      detailCompany.config.checkin,
+      new Date(time)
+    );
+    let defaultCheckout = commons.setTimeToDate(
+      detailCompany.config.checkout,
+      new Date(time)
+    );
 
     if (typeAsk === "comeLateAsk") {
       updateData = {
@@ -537,13 +571,55 @@ const putAskComeLeave = async (req, res, next) => {
         }
       }
     }
+    if (parseInt(status) === 1) {
+      // accept ask come late
+      console.log({ oldData });
+      let diff = 0;
+      let newDiff = 0;
+      if (oldData && oldData[typeAsk] && oldData[typeAsk]?.status === 1) {
+        return commons.handleError(
+          res,
+          "Không thể thực hiện yêu cầu. Vui lòng thử lại sau."
+        );
+      }
+      if (typeAsk === "comeLateAsk") {
+        diff = commons.getDurationToMinutes(
+          defaultCheckin,
+          new Date(time),
+          false
+        );
+        if (diff < 0) {
+          newDiff = (oldData?.minutesComeLate || 0) + diff;
+          if (oldData?.checkin) newDiff = newDiff < 0 ? 0 : newDiff;
+          updateData.minutesComeLate = newDiff;
+        }
+      }
+      if (typeAsk === "leaveEarlyAsk") {
+        diff = commons.getDurationToMinutes(
+          defaultCheckout,
+          new Date(time),
+          false
+        );
+        if (diff > 0) {
+          newDiff = (oldData?.minutesLeaveEarly || 0) - diff;
+          if (oldData?.checkout) newDiff = newDiff < 0 ? 0 : newDiff;
+          updateData.minutesLeaveEarly = newDiff;
+        }
+      }
+      // console.log({
+      //   defaultCheckin,
+      //   defaultCheckout,
+      //   time: new Date(time),
+      //   diff,
+      // });
+    }
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
     // Since upsert creates a document if not finds a document, you don't need to create another one manually.
 
     let workDay = await workDayModel
       .findOneAndUpdate(query, updateData, options)
       .select("-__v");
-    console.log("workDay", workDay);
+    // console.log("workDay", workDay);
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
