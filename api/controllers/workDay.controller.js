@@ -386,7 +386,7 @@ const updateWorkDay = async (req, res, next) => {
       let { lat: lat1, long: lon1 } = detailCompany.config;
       let { latitude: lat2, longitude: lon2 } = location;
       let distance = commons.distance2(lat1, lon1, lat2, lon2);
-      console.log({ lat1, lon1, lat2, lon2, distance });
+      // console.log({ lat1, lon1, lat2, lon2, distance });
       if (distance > ALLOW_DISTANCE_METERS) {
         return handleError(
           res,
@@ -438,7 +438,7 @@ const updateWorkDay = async (req, res, next) => {
       let diff = commons.getDurationToMinutes(defaultCheckout, now, false);
       // 11h ,12h -> < 0
       // 13h, 12h -> > 0
-      if (oldData?.minutesLeaveEarly) {
+      if (oldData?.leaveEarlyAsk?.time && diff > 0) {
         diff = (diff < 0 ? 0 : diff) + (oldData?.minutesLeaveEarly || 0);
       }
 
@@ -451,10 +451,11 @@ const updateWorkDay = async (req, res, next) => {
     } else {
       // date1-date2
       let diff = commons.getDurationToMinutes(defaultCheckin, now, false);
-      if (oldData?.minutesComeLate) {
+      console.log({ diff });
+      if (oldData?.comeLateAsk?.time && diff < 0) {
         diff =
           (diff < 0 ? Math.abs(diff) : 0) + (oldData?.minutesComeLate || 0);
-        diff = diff < 0 ? 0 : diff;
+        diff = diff < 0 ? 0 : -diff;
       }
       updateData = {
         ...updateData,
@@ -464,11 +465,12 @@ const updateWorkDay = async (req, res, next) => {
     }
 
     let options = { upsert: true, new: true, setDefaultsOnInsert: true };
-    // Since upsert creates a document if not finds a document, you don't need to create another one manually.
-    console.log({ query, updateData, options });
+    // Since console.log({ query, updateData, options });
     let workDay = await workDayModel
       .findOneAndUpdate(query, updateData, options)
       .select("-__v");
+    //  upsert creates a document if not finds a document, you don't need to create another one manually.
+
     return res.status(200).json(workDay);
   } catch (error) {
     console.log("error", error);
@@ -576,12 +578,12 @@ const putAskComeLeave = async (req, res, next) => {
       console.log({ oldData });
       let diff = 0;
       let newDiff = 0;
-      if (oldData && oldData[typeAsk] && oldData[typeAsk]?.status === 1) {
-        return commons.handleError(
-          res,
-          "Không thể thực hiện yêu cầu. Vui lòng thử lại sau."
-        );
-      }
+      // if (oldData && oldData[typeAsk] && oldData[typeAsk]?.status === 1) {
+      //   return commons.handleError(
+      //     res,
+      //     "Không thể thực hiện yêu cầu. Vui lòng thử lại sau."
+      //   );
+      // }
       if (typeAsk === "comeLateAsk") {
         diff = commons.getDurationToMinutes(
           defaultCheckin,

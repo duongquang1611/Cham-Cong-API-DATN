@@ -252,12 +252,14 @@ const detectAndIdentify = async (req, res, next) => {
     }
     if (dataUrl) {
       let detectData = await resources.detect(dataUrl);
+      console.log(" detectData", detectData);
       if (detectData.status === 200) {
         console.log("detect success");
         let identifyData = await resources.identify(
           companyId,
           detectData?.data[0].faceId
         );
+        console.log(identifyData.data);
         return res.status(200).json(identifyData.data);
       } else {
         return handleError(res);
