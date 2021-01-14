@@ -578,12 +578,12 @@ const putAskComeLeave = async (req, res, next) => {
       console.log({ oldData });
       let diff = 0;
       let newDiff = 0;
-      // if (oldData && oldData[typeAsk] && oldData[typeAsk]?.status === 1) {
-      //   return commons.handleError(
-      //     res,
-      //     "Không thể thực hiện yêu cầu. Vui lòng thử lại sau."
-      //   );
-      // }
+      if (oldData && oldData[typeAsk] && oldData[typeAsk]?.status === 1) {
+        return commons.handleError(
+          res,
+          "Không thể thực hiện yêu cầu. Vui lòng thử lại sau."
+        );
+      }
       if (typeAsk === "comeLateAsk") {
         diff = commons.getDurationToMinutes(
           defaultCheckin,
