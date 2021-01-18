@@ -790,7 +790,7 @@ const fakeWorkDay = async (req, res, next) => {
   let { isCheckout } = req.body;
   let users = await userModel.find({ companyId: Types.ObjectId(companyId) });
   let userIds = users.map((user) => user._id);
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 10000; i++) {
     setTimeout(async () => {
       let randId = commons.randomNum(0, userIds.length - 1);
       let year = 2020;
@@ -798,16 +798,20 @@ const fakeWorkDay = async (req, res, next) => {
       let { normal } = commons.getNormalDayInMonth(randMonth, year);
       let randDay = commons.randomNum(1, normal.length);
       let randHour = commons.randomNum(0, 1);
-      if (isCheckout) randHour = commons.randomNum(9, 10);
-      let randMins = commons.randomNum(11, 55);
+      if (isCheckout) {
+        randHour = commons.randomNum(10, 11);
+      }
+      let randMins = commons.randomNum(10, 20);
       let dateFormat = `${year}-${randMonth < 10 ? "0" : ""}${randMonth}-${
         randDay < 10 ? "0" : ""
       }${randDay}`;
-      console.log({ now: `${dateFormat}T00:${randMins}:26.099Z` });
+      // console.log({ now: `${dateFormat}T00:${randMins}:26.099Z` });
       let dataFake = {
         userId: userIds[randId],
         dayWork: dateFormat,
-        now: `${dateFormat}T0${randHour}:${randMins}:26.099Z`,
+        now: `${dateFormat}T${
+          randHour < 10 ? "0" : ""
+        }${randHour}:${randMins}:26.099Z`,
       };
       if (isCheckout) {
         dataFake = { ...dataFake, isCheckout: true };

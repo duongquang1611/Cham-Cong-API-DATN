@@ -197,6 +197,9 @@ const fakeWorkDay = async (props) => {
     now,
     defaultCheckin,
     test: detailCompany.config.checkin,
+    day: moment(now).format("D"),
+    month: moment(now).format("M"),
+    year: moment(now).format("YYYY"),
   });
 
   // set parentId, company, day, month, year
@@ -215,7 +218,6 @@ const fakeWorkDay = async (props) => {
     query.dayWork = updateData.dayWork;
   }
   let oldData = await workDayModel.findOne(query);
-  console.log({ now2: now });
 
   // time checkin auto khoi tao khi tao ban ghi
   if (updateData.isCheckout) {
@@ -243,7 +245,6 @@ const fakeWorkDay = async (props) => {
       diff = (diff < 0 ? Math.abs(diff) : 0) + (oldData?.minutesComeLate || 0);
       diff = diff < 0 ? 0 : -diff;
     }
-    console.log({ now3: now });
 
     updateData = {
       ...updateData,
