@@ -8,6 +8,7 @@ import resources from "../resources/index.js";
 import userModel from "../../models/user.model.js";
 import askDayOffModel from "../../models/askDayOff.model.js";
 import { hostname } from "os";
+import axios from "axios";
 const { Types } = mongoose;
 const ALLOW_DISTANCE_METERS = 0.2;
 const TYPE_ASK_COME_LATE = [
@@ -330,8 +331,9 @@ const updateWorkDay = async (req, res, next) => {
     let { location, ...updateData } = req.body;
     console.log({ location });
 
+    // console.log({ now });
+    // return;
     let now = new Date();
-    // let now = moment();
 
     console.log("updateData?.userId", updateData?.userId);
     if (updateData?.userId) {
@@ -782,6 +784,40 @@ const putAskDayOff = async (req, res, next) => {
     return handleError(res, error.message);
   }
 };
+
+const fakeWorkDay = async (req, res, next) => {
+  let companyId = "5f9131ca28b14c3d54443d86";
+  let { isCheckout } = req.body;
+  let users = await userModel.find({ companyId: Types.ObjectId(companyId) });
+  let userIds = users.map((user) => user._id);
+  for (let i = 0; i < 500; i++) {
+    setTimeout(async () => {
+      let randId = commons.randomNum(0, userIds.length - 1);
+      let year = 2020;
+      let randMonth = commons.randomNum(1, 12);
+      let { normal } = commons.getNormalDayInMonth(randMonth, year);
+      let randDay = commons.randomNum(1, normal.length);
+      let randHour = commons.randomNum(0, 1);
+      if (isCheckout) randHour = commons.randomNum(9, 10);
+      let randMins = commons.randomNum(11, 55);
+      let dateFormat = `${year}-${randMonth < 10 ? "0" : ""}${randMonth}-${
+        randDay < 10 ? "0" : ""
+      }${randDay}`;
+      console.log({ now: `${dateFormat}T00:${randMins}:26.099Z` });
+      let dataFake = {
+        userId: userIds[randId],
+        dayWork: dateFormat,
+        now: `${dateFormat}T0${randHour}:${randMins}:26.099Z`,
+      };
+      if (isCheckout) {
+        dataFake = { ...dataFake, isCheckout: true };
+      }
+      let test = await resources.fakeWorkDay(dataFake);
+    }, 100);
+  }
+
+  return res.json(userIds);
+};
 export default {
   index,
   getDetailWorkDay,
@@ -790,4 +826,5 @@ export default {
   getAskComeLeave,
   getAskDayOff,
   putAskDayOff,
+  fakeWorkDay,
 };

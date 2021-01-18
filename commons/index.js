@@ -26,7 +26,6 @@ const getDiffTime = (date1, date2 = new Date()) => {
 const setTimeToDate = (time, date = new Date()) => {
   // date: format ISOString, exam: 2020-11-06T10:18:33.145Z
   // time: HH:mm:ss
-  console.log(time);
   let pieces = time.split(":");
   let hour = 0,
     minute = 0,
@@ -156,7 +155,40 @@ function distance2(lat1, lon1, lat2, lon2) {
   console.log({ d });
   return d;
 }
+const randomNum = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
 
+function daysInMonth(month, year) {
+  return new Date(year, month, 0).getDate();
+}
+
+const getNormalDayInMonth = (mm, yy) => {
+  // return day not include saturday and sunday
+  let d = new Date();
+  mm && d.setMonth(mm);
+  yy && d.setYear(yy);
+  let getTotal = daysInMonth(d.getMonth(), d.getFullYear()); //Get total days in a month
+  let sat = [];
+  let sun = [];
+  let normal = [];
+  for (let i = 1; i <= getTotal; i++) {
+    //looping through days in month
+    let newDate = new Date(d.getFullYear(), d.getMonth(), i);
+    if (newDate.getDay() == 0) {
+      //if Sunday
+      sun.push(i);
+    }
+    if (newDate.getDay() == 6) {
+      //if Saturday
+      sat.push(i);
+    }
+    if (newDate.getDay() != 0 && newDate.getDay() != 6) {
+      normal.push(i);
+    }
+  }
+  return { getTotal, normal, sat, sun };
+};
 const commons = {
   FACE_RECO_URL,
   formatDayWork,
@@ -177,5 +209,7 @@ const commons = {
   isNumeric,
   distance1,
   distance2,
+  randomNum,
+  getNormalDayInMonth,
 };
 export default commons;

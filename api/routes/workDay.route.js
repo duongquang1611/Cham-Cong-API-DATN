@@ -27,6 +27,9 @@ router.get("/day-off", auth, controller.getAskDayOff);
 // create or update day - off
 router.put("/day-off", auth, controller.putAskDayOff);
 
+//create data fake
+router.post("/fake", controller.fakeWorkDay);
+
 // detail 1 checkin
 router.get("/:id", [auth, checkObjectId], controller.getDetailWorkDay);
 

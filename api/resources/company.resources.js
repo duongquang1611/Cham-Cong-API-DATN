@@ -6,6 +6,8 @@ import commons from "../../commons/index.js";
 import moment from "moment";
 import mongoose from "mongoose";
 import userModel from "../../models/user.model.js";
+import resources from "./index.js";
+import workDayModel from "../../models/workDay.model.js";
 const { Types } = mongoose;
 
 dotenv.config();
@@ -144,8 +146,124 @@ const createReport = async (data, daysInMonth, companyId) => {
   });
   return tableData;
 };
+const fakeWorkDay = async (props) => {
+  let { now = new Date(), ...updateData } = props;
+
+  now = new Date(now);
+  let user;
+  if (updateData?.userId) {
+    // cham cong ho, truyen user vao body
+    user = await userModel
+      .findById(updateData?.userId)
+      .populate({
+        path: "companyId",
+        select: "-__v",
+      })
+      .populate({
+        path: "roleId",
+        select: "-__v",
+      })
+      .populate({
+        path: "parentId",
+        select: "-__v -password",
+      })
+      .select("-__v -password")
+      .exec();
+    // console.log({ newUser });
+  }
+  let query = {
+    userId: user._id,
+  };
+
+  // get config company
+  let detailCompany = await resources.getDetailCompany(user.companyId._id);
+  let allowCheckin = commons.setTimeToDate(
+    detailCompany.config.allowCheckin,
+    new Date(now)
+  );
+  let allowCheckout = commons.setTimeToDate(
+    detailCompany.config.allowCheckout,
+    new Date(now)
+  );
+  let defaultCheckin = commons.setTimeToDate(
+    detailCompany.config.checkin,
+    new Date(now)
+  );
+  let defaultCheckout = commons.setTimeToDate(
+    detailCompany.config.checkout,
+    new Date(now)
+  );
+  console.log({
+    now,
+    defaultCheckin,
+    test: detailCompany.config.checkin,
+  });
+
+  // set parentId, company, day, month, year
+  updateData = {
+    ...updateData,
+    parentId: user?.parentId?._id || null,
+    companyId: user.companyId._id,
+    day: moment(now).format("D"),
+    month: moment(now).format("M"),
+    year: moment(now).format("YYYY"),
+  };
+
+  if (!updateData.dayWork) {
+    query.dayWork = moment(now).format(commons.formatDayWork);
+  } else {
+    query.dayWork = updateData.dayWork;
+  }
+  let oldData = await workDayModel.findOne(query);
+  console.log({ now2: now });
+
+  // time checkin auto khoi tao khi tao ban ghi
+  if (updateData.isCheckout) {
+    // checkout
+
+    // date1 - date2
+    let diff = commons.getDurationToMinutes(defaultCheckout, now, false);
+    // 11h ,12h -> < 0
+    // 13h, 12h -> > 0
+    if (oldData?.leaveEarlyAsk?.time && diff > 0) {
+      diff = (diff < 0 ? 0 : diff) + (oldData?.minutesLeaveEarly || 0);
+    }
+
+    updateData = {
+      ...updateData,
+      isSuccessDay: true,
+      minutesLeaveEarly: diff < 0 ? 0 : diff, // checkout sau gio hanh chinh thi 0 phut di muon
+      checkout: now,
+    };
+  } else {
+    // date1-date2
+    let diff = commons.getDurationToMinutes(defaultCheckin, now, false);
+    console.log({ diff });
+    if (oldData?.comeLateAsk?.time && diff < 0) {
+      diff = (diff < 0 ? Math.abs(diff) : 0) + (oldData?.minutesComeLate || 0);
+      diff = diff < 0 ? 0 : -diff;
+    }
+    console.log({ now3: now });
+
+    updateData = {
+      ...updateData,
+      checkin: now,
+      minutesComeLate: diff < 0 ? Math.abs(diff) : 0,
+    };
+  }
+
+  let options = { upsert: true, new: true, setDefaultsOnInsert: true };
+  // Since console.log({ query, updateData, options });
+  let workDay = await workDayModel
+    .findOneAndUpdate(query, updateData, options)
+    .select("-__v");
+  //  upsert creates a document if not finds a document, you don't need to create another one manually.
+  return workDay;
+};
+
 const companyResources = {
   getDetailCompany,
   createReport,
+  fakeWorkDay,
 };
 export default companyResources;
