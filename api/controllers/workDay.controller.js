@@ -790,7 +790,7 @@ const fakeWorkDay = async (req, res, next) => {
   let { isCheckout } = req.body;
   let users = await userModel.find({ companyId: Types.ObjectId(companyId) });
   let userIds = users.map((user) => user._id);
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 1000; i++) {
     setTimeout(async () => {
       let randId = commons.randomNum(0, userIds.length - 1);
       let year = 2020;
