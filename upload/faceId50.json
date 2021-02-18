@@ -1,0 +1,202 @@
+[
+  {
+    "faceId": "d91b967e-c7f3-4e12-90ed-f2fcf5620f79",
+    "faceRectangle": { "top": 354, "left": 230, "width": 248, "height": 328 }
+  },
+  {
+    "faceId": "79a17702-fcef-4d70-b439-db64bb6fa708",
+    "faceRectangle": { "top": 304, "left": 155, "width": 230, "height": 316 }
+  },
+  {
+    "faceId": "9a94aa45-7642-4c57-9dbf-dad4a333b50d",
+    "faceRectangle": { "top": 331, "left": 160, "width": 246, "height": 320 }
+  },
+  {
+    "faceId": "00579b3e-b5f1-4577-977c-20c6efab83ed",
+    "faceRectangle": { "top": 282, "left": 119, "width": 270, "height": 348 }
+  },
+  {
+    "faceId": "2b5b30d8-c8db-41ba-a817-94625e27615b",
+    "faceRectangle": { "top": 390, "left": 105, "width": 235, "height": 300 }
+  },
+  {
+    "faceId": "d5be2aed-6300-48c6-8be7-d8d2661b2da5",
+    "faceRectangle": { "top": 252, "left": 139, "width": 303, "height": 405 }
+  },
+  {
+    "faceId": "8e5be9ca-f134-4032-83b9-a8218d3dd9c4",
+    "faceRectangle": { "top": 177, "left": 129, "width": 362, "height": 476 }
+  },
+  {
+    "faceId": "43acb2e4-e6c7-40e2-9535-53491e7e61ef",
+    "faceRectangle": { "top": 243, "left": 118, "width": 297, "height": 376 }
+  },
+  {
+    "faceId": "4b324b41-83cf-4491-b54e-982f46f0b4fd",
+    "faceRectangle": { "top": 309, "left": 242, "width": 293, "height": 342 }
+  },
+  {
+    "faceId": "5a70c524-fd3f-49ce-bee0-48a2ea414a79",
+    "faceRectangle": { "top": 192, "left": 222, "width": 283, "height": 398 }
+  },
+  {
+    "faceId": "524934ef-2669-4e95-ba66-c3d4e2e3f77f",
+    "faceRectangle": { "top": 361, "left": 96, "width": 281, "height": 384 }
+  },
+  {
+    "faceId": "956bde5b-14be-4e09-82c3-e5fde7143d9d",
+    "faceRectangle": { "top": 370, "left": 172, "width": 286, "height": 382 }
+  },
+  {
+    "faceId": "6ca24424-49dc-45ba-aca1-8a679eb1410b",
+    "faceRectangle": { "top": 188, "left": 156, "width": 177, "height": 221 }
+  },
+  {
+    "faceId": "b74ab758-a4eb-4d32-a770-a49c5e146eec",
+    "faceRectangle": { "top": 208, "left": 163, "width": 183, "height": 228 }
+  },
+  {
+    "faceId": "b5889c0e-3521-4af9-86ca-ae06cc67ad5e",
+    "faceRectangle": { "top": 188, "left": 203, "width": 156, "height": 201 }
+  },
+  {
+    "faceId": "386f427a-b387-4420-a4cf-01e3247cefb7",
+    "faceRectangle": { "top": 232, "left": 149, "width": 222, "height": 287 }
+  },
+  {
+    "faceId": "03d6ae15-3868-4335-961a-c92a937bf1c1",
+    "faceRectangle": { "top": 278, "left": 223, "width": 141, "height": 166 }
+  },
+  {
+    "faceId": "43d82029-4999-4f66-be76-2129348ca8c7",
+    "faceRectangle": { "top": 238, "left": 216, "width": 147, "height": 189 }
+  },
+  {
+    "faceId": "10f2e1dd-0df6-481a-bf6b-27da1510f7f9",
+    "faceRectangle": { "top": 302, "left": 196, "width": 138, "height": 183 }
+  },
+  {
+    "faceId": "3f6c7a87-ac09-4fca-86b2-25cc92c9cf90",
+    "faceRectangle": { "top": 272, "left": 207, "width": 146, "height": 179 }
+  },
+  {
+    "faceId": "e4b19325-a253-4383-b6f1-f2e7f774ad70",
+    "faceRectangle": { "top": 234, "left": 161, "width": 166, "height": 222 }
+  },
+  {
+    "faceId": "b2a0792b-994a-4e20-b770-c0a11db327a2",
+    "faceRectangle": { "top": 238, "left": 156, "width": 183, "height": 251 }
+  },
+  {
+    "faceId": "c721c44f-e56b-4e23-b9d2-002093dba311",
+    "faceRectangle": { "top": 177, "left": 148, "width": 151, "height": 207 }
+  },
+  {
+    "faceId": "ced8b870-9378-4434-9d52-98c85203feac",
+    "faceRectangle": { "top": 240, "left": 207, "width": 151, "height": 194 }
+  },
+  {
+    "faceId": "9b4b18f4-fa86-423e-8a3b-b2cfe81e15a1",
+    "faceRectangle": { "top": 215, "left": 226, "width": 167, "height": 216 }
+  },
+  {
+    "faceId": "17dcf48b-3232-45af-9e0b-65843618e1de",
+    "faceRectangle": { "top": 254, "left": 176, "width": 208, "height": 290 }
+  },
+  {
+    "faceId": "d74388af-0e72-47a5-adda-88595cef1d07",
+    "faceRectangle": { "top": 381, "left": 201, "width": 377, "height": 485 }
+  },
+  {
+    "faceId": "cd825037-ae7b-4ecb-8189-00e74dc39e76",
+    "faceRectangle": { "top": 184, "left": 133, "width": 184, "height": 232 }
+  },
+  {
+    "faceId": "4d9b6532-8f3b-4863-9414-d22f1a14ffdc",
+    "faceRectangle": { "top": 229, "left": 204, "width": 274, "height": 383 }
+  },
+  {
+    "faceId": "e2a002e0-ed18-4f69-8b78-ac1ba535ea1d",
+    "faceRectangle": { "top": 343, "left": 152, "width": 280, "height": 324 }
+  },
+  {
+    "faceId": "a29ccf10-7a12-49af-8f89-4a54675f7778",
+    "faceRectangle": { "top": 287, "left": 209, "width": 412, "height": 539 }
+  },
+  {
+    "faceId": "3d0d4c0e-879f-48c3-a59e-0e98954219fd",
+    "faceRectangle": { "top": 186, "left": 178, "width": 283, "height": 373 }
+  },
+  {
+    "faceId": "10a64d95-b6ce-4b13-9e40-c4742a4dc776",
+    "faceRectangle": { "top": 230, "left": 132, "width": 317, "height": 425 }
+  },
+  {
+    "faceId": "1ff08142-2871-470c-bc39-cff3f7207f2d",
+    "faceRectangle": { "top": 263, "left": 224, "width": 315, "height": 303 }
+  },
+  {
+    "faceId": "9b32f867-6ebe-4606-a9dc-0c0c2bd6641b",
+    "faceRectangle": { "top": 211, "left": 265, "width": 351, "height": 471 }
+  },
+  {
+    "faceId": "6f3cea36-8569-4db2-aa2b-87784fae1ef4",
+    "faceRectangle": { "top": 78, "left": 108, "width": 96, "height": 117 }
+  },
+  {
+    "faceId": "7cad7ff4-7f83-4dac-aa9c-e009ccb6f4a2",
+    "faceRectangle": { "top": 121, "left": 100, "width": 91, "height": 108 }
+  },
+  {
+    "faceId": "03eeae6b-bcf5-4251-afea-d752667c5351",
+    "faceRectangle": { "top": 202, "left": 126, "width": 185, "height": 239 }
+  },
+  {
+    "faceId": "31839f40-d828-44b4-8bbe-9f2b8be23cef",
+    "faceRectangle": { "top": 218, "left": 169, "width": 314, "height": 351 }
+  },
+  {
+    "faceId": "84476ab9-75c9-4da0-96d0-57b1848811d5",
+    "faceRectangle": { "top": 363, "left": 171, "width": 256, "height": 338 }
+  },
+  {
+    "faceId": "5a00fa5f-fa17-4613-9aa6-985de00f2f5c",
+    "faceRectangle": { "top": 354, "left": 165, "width": 251, "height": 342 }
+  },
+  {
+    "faceId": "2b735621-843c-4d14-a940-bb609fd06a05",
+    "faceRectangle": { "top": 328, "left": 194, "width": 254, "height": 333 }
+  },
+  {
+    "faceId": "495b8665-ab3e-45b9-a3d5-78778f48d92e",
+    "faceRectangle": { "top": 314, "left": 225, "width": 209, "height": 281 }
+  },
+  {
+    "faceId": "1148bea5-7f49-40db-8fc9-2646cf4516c5",
+    "faceRectangle": { "top": 200, "left": 152, "width": 289, "height": 367 }
+  },
+  {
+    "faceId": "72c13ff2-40b2-4bfe-923c-b11c6f5c8178",
+    "faceRectangle": { "top": 249, "left": 120, "width": 875, "height": 1141 }
+  },
+  {
+    "faceId": "56ac026d-059c-4f55-88b1-b0fe56d17e97",
+    "faceRectangle": { "top": 309, "left": 105, "width": 805, "height": 1073 }
+  },
+  {
+    "faceId": "49e48242-c43d-481f-a513-f1d6b91160df",
+    "faceRectangle": { "top": 166, "left": 175, "width": 170, "height": 214 }
+  },
+  {
+    "faceId": "4ca06006-de14-4565-95cb-04bdf1959264",
+    "faceRectangle": { "top": 245, "left": 139, "width": 269, "height": 360 }
+  },
+  {
+    "faceId": "8d65032a-725c-48e0-a893-274a41a2f353",
+    "faceRectangle": { "top": 130, "left": 373, "width": 226, "height": 284 }
+  },
+  {
+    "faceId": "704a68d7-2b76-454b-9527-bae5840ed871",
+    "faceRectangle": { "top": 146, "left": 453, "width": 192, "height": 264 }
+  }
+]

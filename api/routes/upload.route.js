@@ -6,6 +6,8 @@ var router = express.Router();
 
 const { auth, checkObjectId, isAdminSystem } = middleware;
 
+router.post("/test", controller.uploadImageTest);
+
 router.post("/", [multerSingle.single("file")], controller.postUploadImage);
 
 export default router;

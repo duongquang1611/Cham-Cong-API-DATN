@@ -28,29 +28,7 @@ const listKey = ["username", "password", "name", "roleId"];
 // }
 // console.log("001~ results", results);
 
-router.get("/test", async (req, res, next) => {
-  // console.log("🚀 ~ file: face.route.js ~ line 32 ~ router.get ~ req", req.ip);
-  const { networkInterfaces } = os;
-  const nets = networkInterfaces();
-  // console.log("router.get ~ nets", nets);
-  const results = Object.create(null); // or just '{}', an empty object
-
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-      // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
-      if (net.family === "IPv4" && !net.internal) {
-        if (!results[name]) {
-          results[name] = [];
-        }
-
-        results[name].push(net.address);
-      }
-    }
-  }
-  console.log("router.get ~ results", results);
-
-  return res.json(results);
-});
+router.post("/save-faceId", controller.saveFaceId);
 
 // add face
 router.post("/detect", [auth, multerSingle.single("file")], controller.detect);
@@ -86,6 +64,26 @@ router.post(
   [auth, checkObjectId, multerSingle.single("file")],
   controller.detectAndIdentify
 );
+
+//add multi face
+router.post(
+  "/:id/persons/:personId/add-multi-face",
+  [checkObjectId],
+  controller.addMultiFace
+);
+
+// test do chinh xac thuat toan
+router.get(
+  "/:id/persons/:personId/test",
+  [checkObjectId],
+  controller.testAccuracy
+);
+
+// delete face
+router.delete("/:id/persons/:personId", [checkObjectId], controller.deleteFace);
+
+// getPerson
+router.get("/:id/persons/:personId", [checkObjectId], controller.getPerson);
 
 // list person group in company
 router.get("/:id/persons", [auth, checkObjectId], controller.listPersons);

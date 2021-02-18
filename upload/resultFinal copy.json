@@ -1,0 +1,11 @@
+[
+  {
+    "personId": "18a25e62-8716-43e9-b277-a5d900df1d24",
+    "companyId": "5f9131ca28b14c3d54443d86",
+    "totalFaceOfPerson": 4,
+    "totalTest": 50,
+    "totalTrue": 49,
+    "percentTrueTest": "98%",
+    "confidenceTest": "88.68989795918371%"
+  }
+]
