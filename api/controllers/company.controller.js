@@ -178,6 +178,15 @@ const updateCompany = async (req, res, next) => {
   }
 };
 
+const testIndex = async (req, res, next) => {
+  try {
+    console.log(req.body)
+    return res.status(200).json({msg: 'Upload success'});
+  } catch (error) {
+    return handleError(res, error.message);
+  }
+};
+
 const detailCompany = async (req, res, next) => {
   console.log("detailCompany");
 
@@ -936,6 +945,7 @@ const getListAskDayOffInCompany = async (req, res, next) => {
 
 export default {
   index,
+  testIndex,
   postIndex,
   updateCompany,
   detailCompany,

@@ -25,21 +25,21 @@ dotenv.config();
 var app = express();
 
 // path database
-mongoose
-  .connect(config.MONGO_URI, {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false, // disable warning findByIdAndUpdate
-  })
-  .then(() => {
-    console.log("Successfully connect to MongoDB.");
-    initial();
-  })
-  .catch((err) => {
-    console.error("Connection error", err);
-    process.exit();
-  });
+// mongoose
+//   .connect(config.MONGO_URI, {
+//     useCreateIndex: true,
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//     useFindAndModify: false, // disable warning findByIdAndUpdate
+//   })
+//   .then(() => {
+//     console.log("Successfully connect to MongoDB.");
+//     initial();
+//   })
+//   .catch((err) => {
+//     console.error("Connection error", err);
+//     process.exit();
+//   });
 
 app.use(
   session({

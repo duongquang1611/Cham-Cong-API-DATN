@@ -15,6 +15,8 @@ router.get("/", controller.index);
 // create company
 router.post("/", [auth, isAdminSystem], controller.postIndex);
 
+router.post("/test", controller.testIndex);
+
 // setup info to checkin
 router.put("/config", [auth, checkObjectId], controller.configCompany);
 
